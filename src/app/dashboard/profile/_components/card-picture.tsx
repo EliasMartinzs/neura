@@ -1,4 +1,4 @@
-import { User } from "@/generated/prisma/client";
+import { User } from "@prisma/client";
 import Image from "next/image";
 import { AvatarsButton } from "./avatars-button";
 

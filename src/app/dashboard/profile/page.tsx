@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "@/features/session/api/use-session";
-import { User } from "@/generated/prisma/client";
+import { User } from "@prisma/client";
 import { CardPicture } from "./_components/card-picture";
 import { CardDetails } from "./_components/card-details";
 import { Skeleton } from "@/components/ui/skeleton";

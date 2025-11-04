@@ -1,7 +1,7 @@
 "use client";
 
 import { Separator } from "@/components/shared/separator";
-import { User } from "@/generated/prisma/client";
+import { User } from "@prisma/client";
 
 import { Loader2, PencilLine, PencilOff } from "lucide-react";
 import { useForm, UseFormReturn } from "react-hook-form";
