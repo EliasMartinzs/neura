@@ -60,8 +60,8 @@ export const DeckCard = ({ deck }: Props) => {
           src={
             circleColors.find((c) => c.background === color)?.foreground ===
             "#fff"
-              ? "/flash-card-dark.png"
-              : "/flash-card-light.png"
+              ? "/icons/flash-card-dark.png"
+              : "/icons/flash-card-light.png"
           }
           alt=""
           width={48}
