@@ -31,7 +31,14 @@ app.use("*", async (c, next) => {
 });
 
 app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
-
+app.on(["POST", "GET"], "/auth/*", async (c) => {
+  try {
+    return await auth.handler(c.req.raw);
+  } catch (err) {
+    console.error("Better Auth Error:", err);
+    return c.json({ error: "Internal Server Error" }, 500);
+  }
+});
 const route = app
   .route("/session", session)
   .route("/profile", profile)

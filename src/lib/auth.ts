@@ -48,9 +48,4 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  cookie: {
-    domain: process.env.BETTER_AUTH_DOMAIN!, // ex: "meuapp.vercel.app"
-    sameSite: "lax", // ou "none" se for cross-site
-    secure: true, // sempre true em produção (HTTPS)
-  },
 });
