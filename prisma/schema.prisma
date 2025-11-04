@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+enum DeckDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  surname  String?
+  favColor String?
+  bio      String?
+
+  decks           Deck[]
+  flashcards      Flashcard[]
+  reminders       Reminder[]
+  aIGeneratedCard AIGeneratedCard[]
+  userStats       UserStats?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+model UserStats {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  flashcardsCreated     Int       @default(0)
+  decksCount            Int       @default(0)
+  studiesCompleted      Int       @default(0)
+  accuracyRate          Float     @default(0.0) // ex: 82.5
+  lastStudyAt           DateTime?
+  studyStreak           Int       @default(0)
+  mostStudiedCategories String[]  @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_stats")
+}
+
+model Deck {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  color       String?
+
+  tags        String[]
+  reviewCount Int?     @default(0)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  flashcards      Flashcard[]
+  aIGeneratedCard AIGeneratedCard[]
+  difficulty      DeckDifficulty?
+  lastStudiedAt   DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?
+
+  @@map("deck")
+}
+
+model Flashcard {
+  id             String        @id @default(cuid())
+  front          String // pergunta
+  back           String // resposta
+  type           FlashcardType @default(TEXT) // tipo do card
+  note           String? // anotação extra
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String
+  deck           Deck?         @relation(fields: [deckId], references: [id])
+  deckId         String?
+  // repetição espaçada
+  easeFactor     Float         @default(2.5)
+  interval       Int           @default(1)
+  repetition     Int           @default(0)
+  nextReview     DateTime?
+  lastReviewedAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  // histórico de revisões
+  reviews FlashcardReview[]
+
+  @@map("flashcard")
+}
+
+model FlashcardReview {
+  id           String    @id @default(cuid())
+  flashcard    Flashcard @relation(fields: [flashcardId], references: [id])
+  flashcardId  String
+  grade        Int // 0, 3, 4, 5 conforme desempenho
+  reviewedAt   DateTime  @default(now())
+  timeToAnswer Int? // tempo de resposta em segundos
+  notes        String? // comentários do usuário
+  createdAt    DateTime  @default(now())
+
+  @@map("flashcard_review")
+}
+
+model Reminder {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  message   String
+  sendAt    DateTime // data agendada para envio
+  sent      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reminder")
+}
+
+model AIGeneratedCard {
+  id        String   @id @default(cuid())
+  prompt    String // texto do pedido ex: "crie flashcards sobre React"
+  response  Json // resposta gerada pela IA (lista de flashcards)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  deck      Deck?    @relation(fields: [deckId], references: [id])
+  deckId    String?
+  createdAt DateTime @default(now())
+
+  @@map("ai_generated_card")
+}
+
+// Tipos de flashcards
+
+enum FlashcardType {
+  TEXT
+  CODE
+}

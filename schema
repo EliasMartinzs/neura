@@ -1,0 +1,18 @@
+model UserStats {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  flashcardsCreated    Int      @default(0)
+  decksCount           Int      @default(0)
+  studiesCompleted     Int      @default(0)
+  accuracyRate         Float    @default(0.0) // ex: 82.5
+  lastStudyAt          DateTime?
+  studyStreak          Int      @default(0)
+  mostStudiedCategories String[] @default([])
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("user_stats")
+}
