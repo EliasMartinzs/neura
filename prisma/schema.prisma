@@ -1,20 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-// generator client {
-//   provider      = "prisma-client"
-//   output        = "../src/generated/prisma"
-//   binaryTargets = ["native", "linux-musl", "rhel-openssl-3.0.x"]
-// }
-
 generator client {
-  provider      = "prisma-client-js" // estava "prisma-client" ❌
-  binaryTargets = ["native", "rhel-openssl-3.0.x", "debian-openssl-3.0.x"]
-  // REMOVA o output customizado para Vercel funcionar
-  // output = "../src/generated/prisma"  
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["relationJoins"]
+  runtime         = "nodejs"
+  engineType      = "client"
 }
 
 // prisma/schema.prisma
