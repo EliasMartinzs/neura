@@ -1,4 +1,4 @@
-import { DeckDifficulty } from "@/generated/prisma/enums";
+import { DeckDifficulty } from "@prisma/client";
 import z from "zod";
 
 const difficultyEnum = z.enum(DeckDifficulty);

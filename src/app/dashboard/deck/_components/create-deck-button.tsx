@@ -28,7 +28,7 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select";
 import { DIFFICULTY } from "@/constants/difficulty";
-import { DeckDifficulty } from "@/generated/prisma/enums";
+import { DeckDifficulty } from "@prisma/client";
 import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 
 export const CreateDeckButton = () => {

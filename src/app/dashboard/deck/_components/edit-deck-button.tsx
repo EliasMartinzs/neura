@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getForeground } from "@/constants/circle-colors";
 import { DIFFICULTY } from "@/constants/difficulty";
 import { useEditDeck } from "@/features/deck/api/use-edit-deck";
-import { DeckDifficulty } from "@/generated/prisma/enums";
+import { DeckDifficulty } from "@prisma/client";
 import client from "@/lib/hc";
 import { cn } from "@/lib/utils";
 import { editDeckSchema, type EditDeckForm } from "@/schemas/edit-deck.schema";
