@@ -13,11 +13,9 @@ export const Title = ({ children, action }: Props) => {
     <motion.div
       initial={{
         opacity: 0,
-        x: -25,
       }}
       animate={{
         opacity: 1,
-        x: 0,
       }}
       transition={{
         ease: "easeIn",
@@ -28,7 +26,7 @@ export const Title = ({ children, action }: Props) => {
         action && "flex items-center justify-between"
       )}
     >
-      <h2 className="text-lg capitalize font-semibold md:text-2xl lg:text-3xl">
+      <h2 className="text-lg capitalize font-semibold lg:text-2xl">
         {children}
       </h2>
 

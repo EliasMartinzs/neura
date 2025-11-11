@@ -1,10 +1,6 @@
+import { auth } from "@/lib/auth";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
-import { auth } from "@/lib/auth";
-
-import session from "./session";
-import profile from "./profile";
-import deck from "./deck";
 
 export type AppVariables = {
   user: typeof auth.$Infer.Session.user | null;
@@ -31,18 +27,17 @@ app.use("*", async (c, next) => {
 });
 
 app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
-app.on(["POST", "GET"], "/auth/*", async (c) => {
-  try {
-    return await auth.handler(c.req.raw);
-  } catch (err) {
-    console.error("Better Auth Error:", err);
-    return c.json({ error: "Internal Server Error" }, 500);
-  }
-});
+
+import deck from "./deck";
+import flashcard from "./flashcard";
+import profile from "./profile";
+import session from "./session";
+
 const route = app
   .route("/session", session)
   .route("/profile", profile)
-  .route("/deck", deck);
+  .route("/deck", deck)
+  .route("/flashcard", flashcard);
 
 export const GET = handle(app);
 export const POST = handle(app);

@@ -8,6 +8,7 @@ import z from "zod";
 
 import { v2 as cloudinary } from "cloudinary";
 import { authMiddleware } from "@/middlewares/auth-middleware";
+import { handlePrismaError } from "@/utils/handle-prisma-error";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
@@ -39,21 +40,14 @@ const app = new Hono<{
 
         return c.json(
           {
-            code: 201,
+            code: 200,
             message: "Perfil editado com sucesso!",
             data: null,
           },
-          201
+          200
         );
       } catch (error) {
-        return c.json(
-          {
-            code: 500,
-            message: "Houve um erro, tente novamente",
-            data: null,
-          },
-          500
-        );
+        return handlePrismaError(c, error);
       }
     }
   )
@@ -76,8 +70,7 @@ const app = new Hono<{
 
         return c.json({ message: "Imagem deletada com sucesso!" }, 200);
       } catch (error) {
-        console.error(error);
-        return c.json({ message: "Erro interno ao deletar imagem." }, 500);
+        return handlePrismaError(c, error);
       }
     }
   );

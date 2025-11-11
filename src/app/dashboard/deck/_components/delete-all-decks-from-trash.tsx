@@ -1,6 +1,7 @@
 import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { useDeleteAllDecks } from "@/features/deck/api/use-delete-all-decks";
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 
 export const DeleteAllDecksFromTrash = ({
@@ -34,8 +35,24 @@ export const DeleteAllDecksFromTrash = ({
       title="Esvaziar lixeira"
       description="Esta ação removerá permanentemente todos os decks da lixeira, incluindo seus cartões e dados associados. Depois de confirmada, não será possível restaurar nenhum conteúdo."
       trigger={
-        <Button size={"lg"} variant={"destructive"}>
-          Deletar todos os itens da lixeira
+        <Button
+          variant={"destructive"}
+          className="p-6 text-lg"
+          type="submit"
+          disabled={isPending}
+        >
+          <span className="relative flex items-center gap-2 ">
+            {isPending ? (
+              <>
+                <Sparkles className="size-5 animate-pulse" />
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                Deletar todos os items
+              </>
+            )}
+          </span>
         </Button>
       }
     >

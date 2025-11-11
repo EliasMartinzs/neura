@@ -16,16 +16,15 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import { getForeground } from "@/constants/circle-colors";
 import { DIFFICULTY } from "@/constants/difficulty";
 import { useEditDeck } from "@/features/deck/api/use-edit-deck";
-import { DeckDifficulty } from "@prisma/client";
 import client from "@/lib/hc";
 import { cn } from "@/lib/utils";
 import { editDeckSchema, type EditDeckForm } from "@/schemas/edit-deck.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DeckDifficulty } from "@prisma/client";
 import { InferResponseType } from "hono";
-import { Loader2, PencilLine, Trash2 } from "lucide-react";
+import { Edit3, Loader2, Sparkles, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { CirclePicker } from "react-color";
 import { useForm } from "react-hook-form";
@@ -47,17 +46,24 @@ export const EditDeckButton = ({ deck }: Props) => {
       onOpenChange={setOpen}
       trigger={
         <Button
-          variant="ghost"
-          style={{
-            color: getForeground(deck.color || ""),
-          }}
+          size={"lg"}
+          variant="icon"
+          className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-blue-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
         >
-          <PencilLine />
+          <Edit3 className="w-5 h-5 group-hover:text-green-100 " />
         </Button>
       }
-      title="Editar deck"
-      description="Faça alterações no seu deck aqui. Clique em salvar quando terminar."
+      title=""
     >
+      <div className="mb-8 text-center animate-fade-in">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full shadow-sm mb-4">
+          <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+          <span className="text-sm font-medium">Editar</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-foreground/70 via-primary/70 to-foreground/25 bg-clip-text text-transparent">
+          Editar meu deck
+        </h1>
+      </div>
       <EditDeckForm deck={deck} close={setOpen} />
     </ResponsiveDialog>
   );
@@ -132,7 +138,7 @@ const EditDeckForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleEditDeck)}
-        className="mx-2 space-y-6"
+        className="m-4 space-y-6 overflow-y-auto"
       >
         <FormField
           control={form.control}
@@ -249,7 +255,7 @@ const EditDeckForm = ({
 
         <div className="w-full flex justify-end">
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? <Loader2 className="size-5 animate-spin" /> : "Criar"}
+            {isLoading ? <Loader2 className="size-5 animate-spin" /> : "Salvar"}
           </Button>
         </div>
       </form>

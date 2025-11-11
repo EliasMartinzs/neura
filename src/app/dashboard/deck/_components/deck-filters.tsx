@@ -7,27 +7,22 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
 import { Separator } from "@/components/ui/separator";
 import { useGetAllTags } from "@/features/deck/api/use-get-tags";
-import { useDeckFiltersStore } from "@/features/deck/store/deck-filters-store";
+import { useDeckFiltersStore } from "@/features/deck/store/use-deck-filters-store";
 import { useTrashStore } from "@/features/deck/store/use-trash-store";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
 import ErrorImage from "../../../../../public/undraw_connection-lost.svg";
 import LoadingImage from "../../../../../public/undraw_loading.svg";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
 
-type Props = {
-  setPerPage: (perPage: number) => void;
-  perPage: number;
-};
-
-export const DeckFilters = ({ setPerPage, perPage }: Props) => {
+export const DeckFilters = () => {
   const { data, isLoading, isError, refetch } = useGetAllTags();
-  const { tags, toggleTag, clearTags } = useDeckFiltersStore();
+  const { tags, toggleTag, clearTags, setPerPage } = useDeckFiltersStore();
   const { onOpen } = useTrashStore();
 
   if (isLoading) {
@@ -66,11 +61,10 @@ export const DeckFilters = ({ setPerPage, perPage }: Props) => {
   return (
     <div className="space-y-6">
       <Separator orientation="horizontal" />
-      <h2 className="text-lg capitalize font-semibold md:text-2xl lg:text-3xl">
-        Filtros
-      </h2>
+      <h2 className="text-lg capitalize font-semibold lg:text-2xl">Filtros</h2>
 
       <div className="w-full flex flex-col lg:flex-row lg:justify-between max-sm:gap-4">
+        {/* Tags */}
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -102,11 +96,15 @@ export const DeckFilters = ({ setPerPage, perPage }: Props) => {
             </Button>
           </NavigationMenuList>
         </NavigationMenu>
+
+        <Separator orientation="vertical" />
+
         <div className="flex items-center gap-4">
+          {/* Per page */}
           <div className="flex items-center gap-x-3">
             <p>Decks por paginas</p>
             <NativeSelect>
-              {[1, 10, 20, 50].map((page) => (
+              {[10, 20, 50].map((page) => (
                 <NativeSelectOption
                   key={page}
                   value={page}
@@ -118,6 +116,7 @@ export const DeckFilters = ({ setPerPage, perPage }: Props) => {
             </NativeSelect>
           </div>
 
+          {/* Trash */}
           <Button onClick={() => onOpen(true)} variant={"outline"}>
             Lixeira{" "}
             <Trash2 className="text-muted-foreground hover:text-foreground duration-200 ease-in transition-all" />

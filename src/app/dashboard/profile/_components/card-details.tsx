@@ -3,13 +3,13 @@
 import { Separator } from "@/components/shared/separator";
 import { User } from "@prisma/client";
 
-import { Loader2, PencilLine, PencilOff } from "lucide-react";
-import { useForm, UseFormReturn } from "react-hook-form";
 import {
   EditProfileForm,
   editProfileSchema,
 } from "@/schemas/edit-profile.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, PencilLine, PencilOff } from "lucide-react";
+import { useForm, UseFormReturn } from "react-hook-form";
 
 import {
   Form,
@@ -20,12 +20,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { Input } from "@/components/ui/input";
-import { AnimatePresence, motion } from "framer-motion";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useEditProfile } from "@/features/profile/api/use-edit-profile";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export const CardDetails = ({ user }: { user: User }) => {
   const [isEditing, setIsEditing] = useState(false);

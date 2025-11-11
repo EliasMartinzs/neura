@@ -32,7 +32,7 @@ export default function RootLayout({
         >
           <QueryProvider>
             {children}
-            <Toaster position="top-center" />
+            <Toaster position="top-right" />
           </QueryProvider>
         </ThemeProvider>
       </body>

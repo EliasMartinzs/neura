@@ -7,9 +7,11 @@ type Deck = NonNullable<ResponseGetDecks>["data"];
 
 export const Decks = ({ decks }: { decks: Deck | null | undefined }) => {
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 p-6">
       {decks?.map((deck) => (
-        <DeckCard deck={deck} key={deck.id} />
+        <div className="relative isolate" key={deck.id}>
+          <DeckCard deck={deck} />
+        </div>
       ))}
     </section>
   );

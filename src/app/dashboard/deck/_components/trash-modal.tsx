@@ -16,18 +16,33 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { useGetTrash } from "@/features/deck/api/use-get-trash";
+import { useRestoreDeck } from "@/features/deck/api/use-restore-deck";
 import { useTrashStore } from "@/features/deck/store/use-trash-store";
-import { cn } from "@/lib/utils";
-import { Calendar, Loader2, LoaderCircle, Trash, Trash2 } from "lucide-react";
+import {
+  ArchiveRestore,
+  Calendar,
+  DiffIcon,
+  Loader2,
+  LoaderCircle,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { PermanentDeleteButton } from "./permanent-delete-button";
-import { getForeground } from "@/constants/circle-colors";
-import { DeleteAccountButton } from "../../profile/_components/delete-account-button";
 import { DeleteAllDecksFromTrash } from "./delete-all-decks-from-trash";
+import { getForeground } from "@/constants/circle-colors";
+import { DIFFICULTY } from "@/constants/difficulty";
+import { DeckDifficulty } from "@prisma/client";
+import { PermanentDeleteButton } from "./permanent-delete-button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const TrashModal = () => {
   const { open, onClose } = useTrashStore();
   const { data, isLoading, isError, refetch, isFetching } = useGetTrash();
+  const { mutate } = useRestoreDeck();
 
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
 
@@ -39,6 +54,12 @@ export const TrashModal = () => {
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);
+
+  async function handleRestoreDeck(id: string) {
+    mutate({
+      id,
+    });
+  }
 
   const renderContent = () => {
     if (isLoading)
@@ -81,40 +102,78 @@ export const TrashModal = () => {
       );
 
     return (
-      <div className="mt-4 flex flex-wrap gap-4">
-        {data?.data?.map(({ color, deletedAt, name, id }) => (
-          <div
-            key={name}
-            className={cn(
-              "border rounded-3xl p-4 flex flex-col gap-y-4 min-w-64"
-            )}
-            style={{
-              borderColor: color as string,
-            }}
-          >
-            <div className="flex items-start justify-between">
-              <h4 className="capitalize text-lg">{name}</h4>
-              <div className="ml-4">
-                <PermanentDeleteButton
-                  textColor={getForeground(color || "")}
-                  id={id}
-                />
+      <div className="mt-4 flex flex-col gap-6 p-4 overflow-y-auto">
+        <div className="mb-8 text-center animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full shadow-sm mb-4">
+            <Sparkles className="w-5 h-5 text-primary animate-pulse" />
+            <span className="text-sm font-medium">Lixeira</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-foreground/70 via-primary/70 to-foreground/25 bg-clip-text text-transparent">
+            Decks na lixeira
+          </h1>
+          <p className="text-foreground mt-2">
+            Eles permanecerão armazenados por até 30 dias, após esse período
+            serão excluídos permanentemente. Você pode restaurar um deck ou
+            removê-lo definitivamente a qualquer momento.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {data?.data?.map(({ color, deletedAt, name, id, difficulty }) => (
+            <div
+              key={id}
+              className="rounded-xl shadow flex flex-col gap-4 p-6"
+              style={{
+                background: `linear-gradient(135deg, ${color}, ${color}cc, ${color}40`,
+              }}
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/30">
+                  <DiffIcon className="w-3.5 h-3.5" />
+                  <span className="text-xs font-bold">
+                    {DIFFICULTY[difficulty as DeckDifficulty]}
+                  </span>
+                </div>
+
+                <div className="space-x-2">
+                  <PermanentDeleteButton id={id} />
+
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size={"lg"}
+                        variant="icon"
+                        className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-red-500/30 transition-all duration-300 hover:scale-110 hover:rotate-12 border border-white/20 shadow-lg group"
+                        onClick={() => handleRestoreDeck(id)}
+                      >
+                        <ArchiveRestore className="w-5 h-5 group-hover:text-red-100 " />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Clique no botão para restaurar o deck.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+
+              <div className="text-white bg-white/15 backdrop-blur-md rounded-xl p-5 border border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300 group/header">
+                <h2 className="text-2xl font-bold text-center leading-relaxed capitalize line-clamp-2 group-hover/header:line-clamp-none group-hover/header:scale-105 group-hover/header:z-50 relative transition-all duration-300">
+                  {name}
+                </h2>
+              </div>
+
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <div className="flex items-center justify-center gap-2 text-white/90">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    Deletado em{" "}
+                    {new Date(deletedAt!).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
               </div>
             </div>
-
-            <div>
-              {deletedAt && (
-                <span className="flex items-center gap-x-3">
-                  <Calendar className="size-5" strokeWidth={0.8} />
-                  {new Intl.DateTimeFormat("pt-BR", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  }).format(new Date(deletedAt))}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
         <div className="w-full flex justify-end">
           <DeleteAllDecksFromTrash
@@ -131,14 +190,8 @@ export const TrashModal = () => {
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[425px] md:max-w-md xl:max-w-5xl">
           <DialogHeader>
-            <DialogTitle>
-              Aqui estão os decks que você moveu para a lixeira.
-            </DialogTitle>
-            <DialogDescription>
-              Eles permanecerão armazenados por até 30 dias, após esse período
-              serão excluídos permanentemente. Você pode restaurar um deck ou
-              removê-lo definitivamente a qualquer momento.
-            </DialogDescription>
+            <DialogTitle></DialogTitle>
+            <DialogDescription></DialogDescription>
           </DialogHeader>
           {renderContent()}
         </DialogContent>
@@ -150,16 +203,9 @@ export const TrashModal = () => {
     <Drawer open={open} onOpenChange={onClose}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>
-            Aqui estão os decks que você moveu para a lixeira.
-          </DrawerTitle>
-          <DrawerDescription>
-            Eles permanecerão armazenados por até 30 dias, após esse período
-            serão excluídos permanentemente. Você pode restaurar um deck ou
-            removê-lo definitivamente a qualquer momento.
-          </DrawerDescription>
+          <DrawerTitle></DrawerTitle>
+          <DrawerDescription></DrawerDescription>
         </DrawerHeader>
-
         {renderContent()}
       </DrawerContent>
     </Drawer>

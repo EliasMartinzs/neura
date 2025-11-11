@@ -14,7 +14,7 @@ type Props = {
   setPage: (page: number) => void;
 };
 
-export const PaginationDeck = ({ page, totalPages, setPage }: Props) => {
+export const PaginationComponent = ({ page, totalPages, setPage }: Props) => {
   const handlePrev = () => {
     if (page > 1) setPage(page - 1);
   };

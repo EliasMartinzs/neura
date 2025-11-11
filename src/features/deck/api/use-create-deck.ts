@@ -20,6 +20,7 @@ export const useCreateDeck = () => {
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["deck"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
     },
     onError: ({ message }) => {
       toast.error(message);

@@ -3,15 +3,16 @@
 import { Title } from "@/components/shared/title";
 import { Button } from "@/components/ui/button";
 import { useGetDecks } from "@/features/deck/api/use-get-decks";
-import { useDeckFiltersStore } from "@/features/deck/store/deck-filters-store";
+import { useDeckFiltersStore } from "@/features/deck/store/use-deck-filters-store";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import ErrorImage from "../../../../public/undraw_connection-lost.svg";
-import LoadingImage from "../../../../public/undraw_loading.svg";
 import NoDataImage from "../../../../public/undraw_no-data.svg";
 import { CreateDeckButton } from "./_components/create-deck-button";
 import { DeckFilters } from "./_components/deck-filters";
 import { Decks } from "./_components/decks";
-import { PaginationDeck } from "./_components/pagination-deck";
+import { PaginationComponent } from "@/components/shared/pagination-component";
+import { cn } from "@/lib/utils";
 
 export default function DeckPage() {
   const { tags, page, perPage, setPage, setPerPage } = useDeckFiltersStore();
@@ -24,28 +25,20 @@ export default function DeckPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-[65svh] overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
-        <Image
-          src={LoadingImage}
-          alt="loading"
-          width={380}
-          height={380}
-          className="object-center object-contain"
-        />
-
-        <h4 className="text-xl xl:text-2xl">Carregando...</h4>
+      <div className="w-full min-h-svh overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
+        <h4 className="text-xl xl:text-2xl">
+          <Loader2 className="animate-spin size-7 text-muted-foreground" />
+        </h4>
       </div>
     );
   }
 
   if (isError || !data) {
-    <div className="w-full min-h-[65svh] overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
+    <div className="w-full min-h-svh overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
       <Image
         src={ErrorImage}
         alt="error"
-        width={380}
-        height={380}
-        className="object-center object-contain"
+        className="object-center object-contain size-40 lg:h-72"
       />
 
       <h4 className="text-xl xl:text-2xl">
@@ -57,16 +50,20 @@ export default function DeckPage() {
 
   if (!data?.data?.length) {
     return (
-      <div className="w-full min-h-[65svh]">
-        <DeckFilters setPerPage={setPerPage} perPage={perPage} />
+      <div
+        className={cn(
+          "max-md:space-y-20 max-md:max-w-xs max-sm:h-[70svh] mx-auto"
+        )}
+      >
+        <DeckFilters />
 
-        <div className="flex-1 flex items-center justify-center flex-col gap-y-20 mt-20">
+        <div className="md:fixed w-full h-full flex items-center justify-center flex-col gap-y-6 inset-0 -z-50">
           <Image
             src={NoDataImage}
             alt="deck"
             width={380}
             height={380}
-            className="object-center object-contain"
+            className="object-center object-contain size-40 lg:h-72"
           />
 
           <h4 className="text-xl xl:text-2xl text-center">
@@ -83,11 +80,11 @@ export default function DeckPage() {
     <main className="space-y-6">
       <Title action={<CreateDeckButton />}>Meus decks</Title>
 
-      <DeckFilters setPerPage={setPerPage} perPage={perPage} />
+      <DeckFilters />
 
       <Decks decks={data?.data} />
 
-      <PaginationDeck
+      <PaginationComponent
         page={page}
         totalPages={data.totalPages}
         setPage={setPage}

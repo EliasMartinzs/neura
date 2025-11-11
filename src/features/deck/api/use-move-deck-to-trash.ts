@@ -26,6 +26,9 @@ export const useMoveDeckToTrash = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["deck"] }),
         queryClient.invalidateQueries({ queryKey: ["trash"] }),
+        queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
+        queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
+        queryClient.invalidateQueries({ queryKey: ["tags"] }),
       ]);
     },
     onError: ({ message }) => {

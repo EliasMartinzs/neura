@@ -20,6 +20,8 @@ export const useEditDeck = () => {
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["deck"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["deck-by-id"] });
     },
     onError: ({ message }) => {
       toast.error(message);

@@ -28,6 +28,7 @@ interface ResponsiveDialogProps {
   description?: string;
   children: React.ReactNode;
   width?: string;
+  className?: string;
 }
 
 export const ResponsiveDialog = ({
@@ -38,6 +39,7 @@ export const ResponsiveDialog = ({
   description,
   children,
   width,
+  className,
 }: ResponsiveDialogProps) => {
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
 
@@ -59,7 +61,11 @@ export const ResponsiveDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>{trigger}</DialogTrigger>
         <DialogContent
-          className={cn("sm:max-w-[425px] md:max-w-md xl:max-w-2xl", width)}
+          className={cn(
+            "sm:max-w-[425px] md:max-w-md xl:max-w-2xl",
+            width,
+            className
+          )}
         >
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
@@ -76,7 +82,7 @@ export const ResponsiveDialog = ({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className={className}>
         <DrawerHeader className="text-left">
           <DrawerTitle>{title}</DrawerTitle>
           {description && <DrawerDescription>{description}</DrawerDescription>}

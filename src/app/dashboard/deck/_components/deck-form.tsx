@@ -1,0 +1,258 @@
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { CreateDeckForm, createDeckSchema } from "@/schemas/create-deck.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateDeck } from "@/features/deck/api/use-create-deck";
+
+import { circleColors } from "@/constants/circle-colors";
+import { DIFFICULTY } from "@/constants/difficulty";
+import { FileText, Palette, Sparkles, Tag, Target, Trash2 } from "lucide-react";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { toast } from "sonner";
+
+export const DeckForm = ({
+  close,
+  openModalDeck,
+  router,
+}: {
+  close: (prev: boolean) => void;
+  openModalDeck: string | null;
+  router: AppRouterInstance;
+}) => {
+  const form = useForm<CreateDeckForm>({
+    resolver: zodResolver(createDeckSchema),
+    defaultValues: {
+      name: "",
+      color: "",
+      description: "",
+      difficulty: "EASY",
+      tags: [],
+    },
+  });
+
+  const { mutate, isPending } = useCreateDeck();
+
+  const isLoading = form.formState.isSubmitting || isPending;
+
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = e.currentTarget.value.trim();
+      if (!value) return;
+      const currentTags = form.getValues("tags") || [];
+      if (!currentTags.includes(value)) {
+        form.setValue("tags", [...currentTags, value], {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+      e.currentTarget.value = "";
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    const updated = form.getValues("tags")?.filter((t) => t !== tag);
+    form.setValue("tags", updated);
+  };
+
+  async function handleCreateDeck(data: CreateDeckForm) {
+    mutate(data, {
+      onSuccess: () => {
+        if (openModalDeck) {
+          router.push("/dashboard/flashcards?open-modal-flashcard=true");
+          toast.success("Redirecionando para a criação do flashcard...");
+        }
+        close(false);
+        form.reset();
+      },
+    });
+  }
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleCreateDeck)}
+        className="space-y-6 overflow-y-auto"
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+                <FileText className="w-4 h-4 text-primary" />
+                Nome do Deck
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Estudos gerais"
+                  {...field}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="color"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+                <Palette className="w-4 h-4 text-primary" />
+                Cor do Deck
+              </FormLabel>
+              <FormControl>
+                <div className="grid grid-cols-10 gap-3">
+                  {circleColors.map((color) => (
+                    <button
+                      key={color.background}
+                      type="button"
+                      onClick={() => field.onChange(color.background)}
+                      disabled={isLoading}
+                      className={`w-full aspect-square rounded-xl transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        field.value === color.background
+                          ? "ring-1 ring-offset-1 ring-purple-500 scale-110"
+                          : "hover:ring-2 ring-slate-300"
+                      }`}
+                      style={{ backgroundColor: color.background }}
+                    />
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+                <FileText className="w-4 h-4 text-primary" />
+                Descrição
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder="Descrição sobre os estudos do deck"
+                  rows={7}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="difficulty"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+                <Target className="w-4 h-4 text-purple-500" />
+                Nível de Dificuldade
+              </FormLabel>
+              <FormControl>
+                <div className="flex items-center gap-3">
+                  {Object.entries(DIFFICULTY).map(([key, value]) => (
+                    <button
+                      onClick={() => field.onChange(key)}
+                      key={key}
+                      type="button"
+                      className={`relative flex-1 overflow-hidden px-4 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        field?.value === key
+                          ? "ring-1 bg-linear-to-r from-primary/80 via-primary to-primary/25 text-white dark:text-foreground"
+                          : "ring-1 ring-slate-200 hover:ring-slate-300"
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="tags"
+          render={() => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+                <Tag className="w-4 h-4 text-primary" />
+                Tags
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Insira uma tag e pressione Enter (uma por vez)."
+                  onKeyDown={handleAddTag}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+
+              <div className="flex items-center gap-3 flex-wrap overflow-hidden">
+                {form.watch("tags")?.map((tag, index) => (
+                  <div
+                    key={index}
+                    className="group flex items-center gap-2 px-4 py-2 bg-linear-to-r from-primary/80 via-primary to-primary/25 rounded-full font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105 animate-pop-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <span className="text-sm text-white">{tag}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      disabled={isLoading}
+                      className="p-1 hover:bg-white/20 rounded-full transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <div className="w-full flex justify-end">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group relative overflow-hidden px-8 py-4 bg-linear-to-r from-primary/80 via-primary to-primary/25 font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <span className="relative flex items-center gap-2 text-white dark:text-foreground">
+              {isLoading ? (
+                <>
+                  <Sparkles className="size-5 animate-pulse" />
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  Criar Deck
+                </>
+              )}
+            </span>
+          </button>
+        </div>
+      </form>
+    </Form>
+  );
+};

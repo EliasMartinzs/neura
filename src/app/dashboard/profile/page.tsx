@@ -1,17 +1,17 @@
 "use client";
 
-import { useSession } from "@/features/session/api/use-session";
-import { User } from "@prisma/client";
-import { CardPicture } from "./_components/card-picture";
-import { CardDetails } from "./_components/card-details";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/features/session/api/use-session";
+import { cn } from "@/lib/utils";
+import { User } from "@prisma/client";
 import { LoaderCircle } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { DetailsStatistics } from "./_components/details-statistics";
+import { CardDetails } from "./_components/card-details";
+import { CardPicture } from "./_components/card-picture";
 import { DeleteAccountButton } from "./_components/delete-account-button";
+import { DetailsStatistics } from "./_components/details-statistics";
 
 const mockUserStats = {
   id: "stat_001",

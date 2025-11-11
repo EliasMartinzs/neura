@@ -1,95 +1,87 @@
 "use client";
-import { Diamond, LogOut, Menu, PanelRight } from "lucide-react";
-import Link from "next/link";
-import { OpenMenuMobile } from "./open-menu-mobile";
+
+import { DropdownUser } from "@/components/shared/dropwown-user";
+import { ModeToggle } from "@/components/shared/mode-toggle";
 import { linksHeader } from "@/constants/links-header";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { SignOutButton } from "@/components/shared/sign-out-button";
-import { ModeToggle } from "@/components/shared/mode-toggle";
-import { motion } from "framer-motion";
-import { DropdownUser } from "@/components/shared/dropwown-user";
+import { AnimatePresence, motion } from "framer-motion";
+import { Diamond } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import OpenIcon from "../../../../public/icons/open.png";
 
-export default function Header() {
-  const pathname = usePathname();
+export const Header = () => {
+  const [open, setOpen] = useState(false);
 
   return (
-    <motion.header
-      initial={{
-        opacity: 0,
-        y: -100,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      transition={{
-        duration: 1,
-        ease: "easeInOut",
-      }}
-      className={cn("fixed top-0 left-0 z-50 w-full")}
-    >
-      <nav
-        className={cn(
-          "mx-auto max-sm:max-w-xs md:max-w-2xl xl:max-w-5xl mt-6 p-4 xl:p-2 border rounded-full shadow"
-        )}
-      >
-        {/* Max XL */}
-        <div className="flex items-center justify-between xl:hidden">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-x-2 text-muted-foreground hover:text-foreground duration-200 transition-colors cursor-pointer"
+    <header className="w-full max-w-sm mx-auto my-10 shadow p-4 rounded-full z-50">
+      <nav className="w-full flex items-center relative">
+        <Link href="/dashboard" className="flex items-center gap-x-3 group">
+          <Diamond className="size-5 text-primary/70 hover:text-primary duration-200 ease-in transition-colors group-hover:scale-105" />
+          Neura
+        </Link>
+
+        <Image
+          src={OpenIcon}
+          alt="open menu"
+          className={cn(
+            "size-6 object-cover duration-200 ease-in transition-transform absolute z-51 right-5",
+            open ? "rotate-0" : "rotate-180"
+          )}
+          onClick={() => setOpen((open) => !open)}
+        />
+      </nav>
+
+      {open && (
+        <button
+          className="fixed inset-0 z-50 cursor-pointer w-screen h-screen bg-black/40 backdrop-blur-sm"
+          onClick={() => setOpen((open) => !open)}
+        ></button>
+      )}
+
+      <AnimatePresence initial={false}>
+        {open ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              transition: { ease: ["easeIn", "easeOut"] },
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0,
+              transition: { ease: ["easeIn", "easeOut"] },
+            }}
+            key="modal"
+            className="absolute top-0 left-1/2 right-1/2 -translate-x-1/2 transform w-screen overflow-hidden bg-background backdrop-blur-lg pt-32 p-10 flex flex-col items-center justify-center gap-6 shadow z-50"
           >
-            <Diamond />
-            Neura
-          </Link>
-
-          <OpenMenuMobile />
-        </div>
-
-        {/* MIN Xl */}
-        <div className="hidden xl:flex w-full items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-x-2 text-muted-foreground hover:text-foreground duration-200 transition-colors cursor-pointer pl-6"
-          >
-            <Diamond />
-            Neura
-          </Link>
-
-          <ul className="flex items-center gap-x-5">
-            {linksHeader.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.id}>
+            <div className="flex items-center justify-evenly gap-4 flex-wrap">
+              {linksHeader.map((link) => {
+                const Icon = link.icon;
+                return (
                   <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-x-2 text-muted-foreground hover:text-foreground duration-200 transition-colors cursor-pointer group",
-                      pathname === item.href && "text-foreground"
-                    )}
+                    key={link.id}
+                    href={link.href}
+                    className={
+                      "flex items-center cursor-pointer gap-x-3 text-muted-foreground hover:text-primary transition-colors duration-200 ease-in group text-xl"
+                    }
+                    onClick={() => setOpen((open) => !open)}
                   >
-                    <Icon
-                      strokeWidth={0.8}
-                      size={24}
-                      className={cn(
-                        "hidden group-hover:block transition-transform duration-200"
-                      )}
-                    />
-
-                    {item.name}
+                    <Icon className="group-hover:text-primary group-hover:scale-110 size-6" />{" "}
+                    {link.name}
                   </Link>
-                </li>
-              );
-            })}
+                );
+              })}
 
-            <SignOutButton />
-            <ModeToggle />
+              <ModeToggle />
+            </div>
 
             <DropdownUser />
-          </ul>
-        </div>
-      </nav>
-    </motion.header>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </header>
   );
-}
+};

@@ -1,5 +1,5 @@
 import React from "react";
-import Header from "./_components/header";
+import { Header } from "./_components/header";
 import { ModalProvider } from "@/providers/modal-provider";
 
 export default function DashboardLayout({
@@ -11,7 +11,7 @@ export default function DashboardLayout({
     <div className="w-full">
       <Header />
 
-      <div className="pt-28 m-2 md:m-4 lg:m-6 xl:m-10">{children}</div>
+      <div className="m-2 md:m-4 lg:m-6 xl:m-10">{children}</div>
       <ModalProvider />
     </div>
   );

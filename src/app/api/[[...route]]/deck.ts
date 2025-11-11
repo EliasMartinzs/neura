@@ -8,6 +8,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z from "zod";
 import { AppVariables } from "./route";
+import { handlePrismaError } from "@/utils/handle-prisma-error";
 
 const app = new Hono<{
   Variables: AppVariables;
@@ -62,6 +63,17 @@ const app = new Hono<{
             tags: true,
             createdAt: true,
             difficulty: true,
+            reviewCount: true,
+            lastStudiedAt: true,
+            flashcards: {
+              select: {
+                reviews: true,
+                front: true,
+                id: true,
+                performanceAvg: true,
+                nextReview: true,
+              },
+            },
             _count: {
               select: {
                 flashcards: true,
@@ -83,14 +95,7 @@ const app = new Hono<{
           200
         );
       } catch (error) {
-        return c.json(
-          {
-            code: 500,
-            message: `Houve um erro, tente novamente`,
-            data: null,
-          },
-          500
-        );
+        return handlePrismaError(c, error);
       }
     }
   )
@@ -101,6 +106,7 @@ const app = new Hono<{
       const decks = await prisma.deck.findMany({
         where: {
           userId: user?.id,
+          deletedAt: null,
         },
         select: {
           tags: true,
@@ -118,14 +124,7 @@ const app = new Hono<{
         200
       );
     } catch (error) {
-      return c.json(
-        {
-          code: 500,
-          message: `Houve um erro, tente novamente`,
-          data: null,
-        },
-        500
-      );
+      return handlePrismaError(c, error);
     }
   })
   .get("/trash", authMiddleware, readSecutiryMiddleware, async (c) => {
@@ -160,16 +159,112 @@ const app = new Hono<{
         200
       );
     } catch (error) {
-      return c.json(
-        {
-          code: 500,
-          message: "Houve um erro, tente novamente!",
-          data: null,
-        },
-        500
-      );
+      return handlePrismaError(c, error);
     }
   })
+  .get(
+    "/names",
+    authMiddleware,
+    readSecutiryMiddleware,
+    zValidator(
+      "query",
+      z.object({
+        hasFlashcard: z.coerce.boolean().optional(),
+      })
+    ),
+    async (c) => {
+      try {
+        const user = c.get("user");
+        const { hasFlashcard } = c.req.valid("query");
+
+        const decks = await prisma.deck.findMany({
+          where: {
+            userId: user?.id,
+            deletedAt: null,
+            ...(hasFlashcard ? { flashcards: { some: {} } } : {}),
+          },
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            _count: {
+              select: {
+                flashcards: true,
+              },
+            },
+          },
+        });
+
+        return c.json(
+          {
+            code: 200,
+            message: null,
+            data: decks,
+          },
+          200
+        );
+      } catch (error) {
+        return handlePrismaError(c, error);
+      }
+    }
+  )
+  .get(
+    "/:id",
+    authMiddleware,
+    readSecutiryMiddleware,
+    zValidator(
+      "param",
+      z.object({
+        id: z.string(),
+      })
+    ),
+    async (c) => {
+      try {
+        const { id } = c.req.valid("param");
+        const user = c.get("user");
+
+        const deck = await prisma.deck.findUnique({
+          where: {
+            id: id,
+            userId: user?.id,
+          },
+          select: {
+            color: true,
+            createdAt: true,
+            description: true,
+            difficulty: true,
+            flashcards: {
+              include: {
+                reviews: true,
+              },
+            },
+            id: true,
+            lastStudiedAt: true,
+            name: true,
+            reviewCount: true,
+            tags: true,
+            _count: {
+              select: {
+                flashcards: true,
+                aIGeneratedCard: true,
+              },
+            },
+          },
+        });
+
+        return c.json(
+          {
+            code: 200,
+            mesasge: "null",
+            data: deck,
+          },
+          200
+        );
+      } catch (error) {
+        return handlePrismaError(c, error);
+      }
+    }
+  )
   .post(
     "/",
     zValidator("json", createDeckSchema),
@@ -196,14 +291,7 @@ const app = new Hono<{
           201
         );
       } catch (error) {
-        return c.json(
-          {
-            code: 500,
-            message: "Houve um erro ao criar o deck, tente novamente",
-            data: null,
-          },
-          500
-        );
+        return handlePrismaError(c, error);
       }
     }
   )
@@ -229,21 +317,52 @@ const app = new Hono<{
 
         return c.json(
           {
-            code: 201,
+            code: 200,
             message: "Deck editado com sucesso!",
             data: null,
           },
-          201
+          200
         );
       } catch (error) {
+        return handlePrismaError(c, error);
+      }
+    }
+  )
+  .put(
+    "/restore-deck",
+    authMiddleware,
+    heavyWriteSecurityMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        id: z.string().min(1),
+      })
+    ),
+    async (c) => {
+      try {
+        const user = c.get("user");
+        const { id } = c.req.valid("json");
+
+        await prisma.deck.update({
+          where: {
+            userId: user?.id,
+            id: id,
+          },
+          data: {
+            deletedAt: null,
+          },
+        });
+
         return c.json(
           {
-            code: 500,
-            message: "Houve um erro, tente novamnte!",
+            code: 200,
+            message: "Deck restaurado com sucesso!",
             data: null,
           },
-          500
+          200
         );
+      } catch (error) {
+        return handlePrismaError(c, error);
       }
     }
   )
@@ -274,21 +393,14 @@ const app = new Hono<{
 
         return c.json(
           {
-            code: 201,
+            code: 200,
             message: "Deck movido para a lixeira!",
             data: null,
           },
-          500
+          200
         );
       } catch (error) {
-        return c.json(
-          {
-            code: 500,
-            message: "Houve um erro, tente novamente!",
-            data: null,
-          },
-          500
-        );
+        return handlePrismaError(c, error);
       }
     }
   )
@@ -317,21 +429,14 @@ const app = new Hono<{
 
         return c.json(
           {
-            code: 201,
+            code: 200,
             message: "Todos os decks deletados com sucesso!",
             data: null,
           },
-          500
+          200
         );
       } catch (error) {
-        return c.json(
-          {
-            code: 500,
-            message: "Houve um erro, tente novamente!",
-            data: null,
-          },
-          500
-        );
+        return handlePrismaError(c, error);
       }
     }
   )
@@ -359,21 +464,14 @@ const app = new Hono<{
 
         return c.json(
           {
-            code: 201,
+            code: 200,
             message: "Deck deletado com sucesso!",
             data: null,
           },
-          500
+          200
         );
       } catch (error) {
-        return c.json(
-          {
-            code: 500,
-            message: "Houve um erro, tente novamente!",
-            data: null,
-          },
-          500
-        );
+        return handlePrismaError(c, error);
       }
     }
   );
