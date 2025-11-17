@@ -82,7 +82,7 @@ export const DeckForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleCreateDeck)}
-        className="space-y-6 overflow-y-auto"
+        className="space-y-6 overflow-y-auto px-4"
       >
         <FormField
           control={form.control}
@@ -177,7 +177,7 @@ export const DeckForm = ({
                       type="button"
                       className={`relative flex-1 overflow-hidden px-4 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
                         field?.value === key
-                          ? "ring-1 bg-linear-to-r from-primary/80 via-primary to-primary/25 text-white dark:text-foreground"
+                          ? "ring-1 bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white dark:text-foreground"
                           : "ring-1 ring-slate-200 hover:ring-slate-300"
                       }`}
                     >
@@ -213,7 +213,7 @@ export const DeckForm = ({
                 {form.watch("tags")?.map((tag, index) => (
                   <div
                     key={index}
-                    className="group flex items-center gap-2 px-4 py-2 bg-linear-to-r from-primary/80 via-primary to-primary/25 rounded-full font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105 animate-pop-in"
+                    className="group flex items-center gap-2 px-4 py-2 bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 rounded-full font-medium shadow-md hover:shadow-lg transition-all transform hover:scale-105 animate-pop-in"
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
                     <span className="text-sm text-white">{tag}</span>
@@ -236,7 +236,7 @@ export const DeckForm = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="group relative overflow-hidden px-8 py-4 bg-linear-to-r from-primary/80 via-primary to-primary/25 font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="group relative overflow-hidden px-8 py-4 bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 font-bold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <span className="relative flex items-center gap-2 text-white dark:text-foreground">
               {isLoading ? (

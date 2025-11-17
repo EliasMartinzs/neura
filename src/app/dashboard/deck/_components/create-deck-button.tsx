@@ -39,7 +39,7 @@ export const CreateDeckButton = () => {
       }
       title=""
     >
-      <div className="overflow-y-auto m-4">
+      <div className="overflow-y-auto">
         <div className="mb-8 text-center animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full shadow-sm mb-4">
             <Sparkles className="w-5 h-5 text-primary animate-pulse" />
@@ -52,6 +52,7 @@ export const CreateDeckButton = () => {
             Organize seus estudos de forma inteligente
           </p>
         </div>
+
         <DeckForm
           close={setOpen}
           openModalDeck={openModalDeck}

@@ -4,7 +4,6 @@ generator client {
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
-// prisma/schema.prisma
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -16,44 +15,79 @@ enum DeckDifficulty {
   HARD
 }
 
+enum BloomLevel {
+  REMEMBER
+  UNDERSTAND
+  APPLY
+  ANALYZE
+  EVALUATE
+  CREATE
+}
+
+enum FlashcardDifficulty {
+  VERY_EASY
+  EASY
+  MEDIUM
+  HARD
+  VERY_HARD
+}
+
+enum GenerationModel {
+  SIMPLE
+  DETAILED
+  QUIZ
+  EXPLAINED
+}
+
+enum ActivityType {
+  CREATE_DECK
+  UPDATE_DECK
+  DELETE_DECK
+
+  CREATE_FLASHCARD
+  UPDATE_FLASHCARD
+  DELETE_FLASHCARD
+
+  REVIEW_FLASHCARD
+  STUDY_SESSION_STARTED
+  STUDY_SESSION_COMPLETED
+
+  OTHER
+}
+
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  surname       String?
+  favColor      String?
+  bio           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  surname  String?
-  favColor String?
-  bio      String?
-
+  sessions        Session[]
+  accounts        Account[]
   decks           Deck[]
   flashcards      Flashcard[]
   reminders       Reminder[]
   aIGeneratedCard AIGeneratedCard[]
   userStats       UserStats?
-
-  @@unique([email])
-  @@map("user")
+  studySessions   StudySession[]
+  activityLogs    ActivityLog[]
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  token     String   @unique
   ipAddress String?
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([token])
-  @@map("session")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -71,8 +105,6 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-
-  @@map("account")
 }
 
 model Verification {
@@ -81,9 +113,7 @@ model Verification {
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-
-  @@map("verification")
+  updatedAt  DateTime @updatedAt
 }
 
 model UserStats {
@@ -91,13 +121,16 @@ model UserStats {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  flashcardsCreated     Int       @default(0)
   decksCount            Int       @default(0)
+  flashcardsCreated     Int       @default(0)
   studiesCompleted      Int       @default(0)
-  accuracyRate          Float     @default(0.0) // ex: 82.5
+  totalReviews          Int       @default(0)
+  totalStudyTime        Int       @default(0)
+  accuracyRateCards     Float     @default(0.0)
+  totalCorrectAnswers   Int       @default(0)
+  totalWrongAnswers     Int       @default(0)
   lastStudyAt           DateTime?
-  studyStreak           Int       @default(0)
-  mostStudiedCategories String[]  @default([])
+  mostStudiedCategories Json[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -106,96 +139,151 @@ model UserStats {
 }
 
 model Deck {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  color       String?
+  id            String          @id @default(cuid())
+  name          String
+  description   String?
+  color         String?
+  tags          String[]
+  reviewCount   Int?            @default(0)
+  difficulty    DeckDifficulty?
+  lastStudiedAt DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
-  tags        String[]
-  reviewCount Int?     @default(0)
-
-  user   User   @relation(fields: [userId], references: [id])
   userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   flashcards      Flashcard[]
   aIGeneratedCard AIGeneratedCard[]
-  difficulty      DeckDifficulty?
-  lastStudiedAt   DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  deletedAt       DateTime?
+  studySessions   StudySession[]
 
   @@map("deck")
 }
 
 model Flashcard {
-  id             String        @id @default(cuid())
-  front          String // pergunta
-  back           String // resposta
-  type           FlashcardType @default(TEXT) // tipo do card
-  note           String? // anotação extra
-  user           User          @relation(fields: [userId], references: [id])
-  userId         String
-  deck           Deck?         @relation(fields: [deckId], references: [id])
-  deckId         String?
-  // repetição espaçada
-  easeFactor     Float         @default(2.5)
-  interval       Int           @default(1)
-  repetition     Int           @default(0)
+  id         String               @id @default(cuid())
+  front      String
+  back       String
+  topic      String?
+  subtopic   String?
+  difficulty FlashcardDifficulty?
+  bloomLevel BloomLevel?
+
+  color String?
+
+  note          String?
+  userId        String
+  deckId        String?
+  generatedById String?
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck        Deck?            @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  generatedBy AIGeneratedCard? @relation("AIGeneratedToFlashcards", fields: [generatedById], references: [id])
+
+  // spaced repetition
+  easeFactor     Float     @default(2.5)
+  interval       Int       @default(1)
+  repetition     Int       @default(0)
   nextReview     DateTime?
   lastReviewedAt DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  deletedAt      DateTime?
+  performanceAvg Float?    @default(0.0)
 
-  // histórico de revisões
-  reviews FlashcardReview[]
+  reviews   FlashcardReview[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  deletedAt DateTime?
 
   @@map("flashcard")
 }
 
-model FlashcardReview {
-  id           String    @id @default(cuid())
-  flashcard    Flashcard @relation(fields: [flashcardId], references: [id])
-  flashcardId  String
-  grade        Int // 0, 3, 4, 5 conforme desempenho
-  reviewedAt   DateTime  @default(now())
-  timeToAnswer Int? // tempo de resposta em segundos
-  notes        String? // comentários do usuário
-  createdAt    DateTime  @default(now())
-
-  @@map("flashcard_review")
-}
-
-model Reminder {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  message   String
-  sendAt    DateTime // data agendada para envio
-  sent      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("reminder")
-}
-
 model AIGeneratedCard {
-  id        String   @id @default(cuid())
-  prompt    String // texto do pedido ex: "crie flashcards sobre React"
-  response  Json // resposta gerada pela IA (lista de flashcards)
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  deck      Deck?    @relation(fields: [deckId], references: [id])
-  deckId    String?
+  id                  String      @id @default(cuid())
+  prompt              String
+  response            Json
+  accepted            Boolean     @default(false)
+  edited              Boolean     @default(false)
+  generatedFlashcards Flashcard[] @relation("AIGeneratedToFlashcards")
+
+  userId String
+  deckId String?
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deck Deck? @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   @@map("ai_generated_card")
 }
 
-// Tipos de flashcards
+model StudySession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deckId String
+  deck   Deck   @relation(fields: [deckId], references: [id], onDelete: Cascade)
 
-enum FlashcardType {
-  TEXT
-  CODE
+  startedAt    DateTime  @default(now())
+  endedAt      DateTime?
+  completed    Boolean   @default(false)
+  currentIndex Int       @default(0)
+  correctCount Int       @default(0)
+  wrongCount   Int       @default(0)
+
+  flashcardReviews FlashcardReview[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model FlashcardReview {
+  id           String        @id @default(cuid())
+  flashcardId  String
+  flashcard    Flashcard     @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  sessionId    String?
+  session      StudySession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  grade        Int
+  reviewedAt   DateTime      @default(now())
+  timeToAnswer Int?
+  notes        String?
+  createdAt    DateTime      @default(now())
+
+  @@map("flashcard_review")
+}
+
+model UserTagCount {
+  id     String @id @default(cuid())
+  userId String
+  tag    String
+  count  Int    @default(0)
+
+  @@unique([userId, tag])
+  @@map("user_tag_count")
+}
+
+model ActivityLog {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    ActivityType
+  icon    String
+  message String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("activity_log")
+}
+
+model Reminder {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  message   String
+  sendAt    DateTime
+  sent      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reminder")
 }

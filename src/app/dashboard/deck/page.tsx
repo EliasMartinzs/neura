@@ -1,9 +1,11 @@
 "use client";
 
+import { PaginationComponent } from "@/components/shared/pagination-component";
 import { Title } from "@/components/shared/title";
 import { Button } from "@/components/ui/button";
 import { useGetDecks } from "@/features/deck/api/use-get-decks";
 import { useDeckFiltersStore } from "@/features/deck/store/use-deck-filters-store";
+import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import ErrorImage from "../../../../public/undraw_connection-lost.svg";
@@ -11,8 +13,6 @@ import NoDataImage from "../../../../public/undraw_no-data.svg";
 import { CreateDeckButton } from "./_components/create-deck-button";
 import { DeckFilters } from "./_components/deck-filters";
 import { Decks } from "./_components/decks";
-import { PaginationComponent } from "@/components/shared/pagination-component";
-import { cn } from "@/lib/utils";
 
 export default function DeckPage() {
   const { tags, page, perPage, setPage, setPerPage } = useDeckFiltersStore();
@@ -75,7 +75,6 @@ export default function DeckPage() {
       </div>
     );
   }
-
   return (
     <main className="space-y-6">
       <Title action={<CreateDeckButton />}>Meus decks</Title>

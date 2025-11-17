@@ -7,24 +7,19 @@ import {
   ResponseFlashcard,
   useGetFlashcard,
 } from "@/features/flashcard/api/use-get-flashcard";
-import { cn } from "@/lib/utils";
-import { BloomLevel, FlashcardDifficulty } from "@prisma/client";
 import {
   ArrowLeft,
-  Award,
-  BookOpen,
   Brain,
   Calendar,
   ChevronRight,
   Clock,
   Eye,
   EyeOff,
-  Info,
   Layers,
   Loader2,
-  RotateCw,
+  LucideIcon,
+  LucideProps,
   Star,
-  Target,
   TrendingUp,
   Zap,
 } from "lucide-react";
@@ -35,15 +30,17 @@ import { useHelperFlashcard } from "@/hooks/use-helper-flashcard";
 import Image from "next/image";
 import NoDataImage from "../../../../../public/undraw_no-data.svg";
 
-import { motion } from "framer-motion";
+import { FlashcardDetail } from "@/components/shared/flashcard-detail";
+import { BloomLevel } from "@prisma/client";
 import Link from "next/link";
+import { DeleteFlashcardButton } from "../_components/delete-flashcard-button";
 
 type Flashcard = NonNullable<ResponseFlashcard>["data"];
 
 export default function Flashcard() {
   const { id } = useParams<{ id: string }>();
-  const [isFlipped, setIsFlipped] = useState(false);
   const [showStats, setShowStats] = useState(true);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   const { data, isLoading, isError, refetch, isRefetching } =
     useGetFlashcard(id);
@@ -74,7 +71,7 @@ export default function Flashcard() {
 
   if (!data?.data) {
     return (
-      <div className="w-full h-svh overflow-hidden flex items-center justify-center flex-col absolute top-0 left-0 gap-y-6">
+      <div className="w-full h-svh overflow-hidden flex items-center justify-center flex-col absolute top-0 left-0 gap-y-6 -z-50">
         <Image
           src={NoDataImage}
           alt="no data"
@@ -100,26 +97,19 @@ export default function Flashcard() {
   const flashcard = data?.data;
 
   const {
-    bloomLevelConfig,
-    difficultyConfig,
-    formatDate,
     getEaseFactorInfo,
     getPerformanceInfo,
+    formatDate,
+    bloomLevelConfig,
   } = useHelperFlashcard(flashcard);
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
-  const difficulty =
-    difficultyConfig[flashcard.difficulty as FlashcardDifficulty];
-  const bloomLevel = bloomLevelConfig[flashcard.bloomLevel as BloomLevel];
-  const easeInfo = getEaseFactorInfo(flashcard.easeFactor);
+  const bloomLevel = bloomLevelConfig[flashcard?.bloomLevel as BloomLevel];
+  const easeInfo = getEaseFactorInfo(flashcard?.easeFactor as number);
   const performanceInfo = getPerformanceInfo(
-    flashcard.performanceAvg as number
+    flashcard?.performanceAvg as number
   );
-  const nextReviewDate = formatDate(flashcard.nextReview);
-  const lastReviewDate = formatDate(flashcard.lastReviewedAt);
+  const nextReviewDate = formatDate(flashcard?.nextReview);
+  const lastReviewDate = formatDate(flashcard?.lastReviewedAt);
 
   return (
     <div className="p-4 md:p-8">
@@ -131,18 +121,18 @@ export default function Flashcard() {
           subtopic={flashcard.subtopic}
           setShowStats={setShowStats}
           showStats={showStats}
+          id={id}
         />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Flashcard Column */}
-          <FlashcardCard
-            bloomLevel={bloomLevel}
-            difficulty={difficulty}
-            difficultyConfig={difficultyConfig}
-            flashcard={flashcard}
-            handleFlip={handleFlip}
-            isFlipped={isFlipped}
-          />
+          <div className="lg:col-span-2">
+            <FlashcardDetail
+              flashcard={flashcard}
+              isFlipped={isFlipped}
+              setIsFlipped={setIsFlipped}
+            />
+          </div>
 
           {/* Stats Sidebar */}
           {showStats && (
@@ -194,11 +184,13 @@ const HeaderCard = ({
   showStats,
   subtopic,
   topic,
+  id,
 }: {
   topic: string | null;
   subtopic: string | null;
   setShowStats: (prev: boolean) => void;
   showStats: boolean;
+  id: string;
 }) => {
   return (
     <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
@@ -217,208 +209,17 @@ const HeaderCard = ({
         </p>
       </div>
 
-      <Button variant="icon" onClick={() => setShowStats(!showStats)}>
-        {showStats ? (
-          <EyeOff className="w-4 h-4 mr-2" />
-        ) : (
-          <Eye className="w-4 h-4 mr-2" />
-        )}
-        {showStats ? "Ocultar" : "Mostrar"} Estatísticas
-      </Button>
-    </div>
-  );
-};
+      <div className="space-x-3">
+        <Button variant="icon" onClick={() => setShowStats(!showStats)}>
+          {showStats ? (
+            <EyeOff className="w-4 h-4 mr-2" />
+          ) : (
+            <Eye className="w-4 h-4 mr-2" />
+          )}
+          {showStats ? "Ocultar" : "Mostrar"} Estatísticas
+        </Button>
 
-const FlashcardCard = ({
-  handleFlip,
-  flashcard,
-  isFlipped,
-  difficulty,
-  bloomLevel,
-  difficultyConfig,
-}: {
-  flashcard: Flashcard;
-  handleFlip: () => void;
-  isFlipped: boolean;
-  difficulty: {
-    bg: string;
-    text: string;
-    border: string;
-    label: string;
-    icon: string;
-    description: string;
-  };
-  bloomLevel: {
-    label: string;
-    icon: string;
-    description: string;
-  };
-  difficultyConfig: Record<
-    FlashcardDifficulty,
-    {
-      bg: string;
-      text: string;
-      border: string;
-      label: string;
-      icon: string;
-      description: string;
-    }
-  >;
-}) => {
-  const bg = `linear-gradient(to bottom right, ${
-    flashcard?.color ?? "#7c3aed"
-  }, ${flashcard?.color ?? "#7c3aed"}99, ${flashcard?.color ?? "#7c3aed"}cc)`;
-
-  return (
-    <div className="lg:col-span-2 space-y-6">
-      {/* Flashcard */}
-      <div
-        className="relative cursor-pointer group"
-        style={{ perspective: "1000px" }}
-        onClick={handleFlip}
-        aria-pressed={isFlipped}
-      >
-        <motion.div
-          className="relative w-full"
-          style={{ transformStyle: "preserve-3d", height: "500px" }}
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
-          initial={false}
-        >
-          <>
-            <div className="absolute top-0 left-0 w-24 h-24 bg-white/10 rounded-br-full z-99"></div>
-            <div className="absolute bottom-0 right-0 w-24 h-24 bg-black/10 rounded-tl-full z-99"></div>
-
-            {/* Floating particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-99">
-              <div
-                className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/30 rounded-full animate-ping"
-                style={{ animationDelay: "0s", animationDuration: "3s" }}
-              ></div>
-              <div
-                className="absolute top-3/4 right-1/4 w-2 h-2 bg-white/30 rounded-full animate-ping"
-                style={{ animationDelay: "1s", animationDuration: "3s" }}
-              ></div>
-              <div
-                className="absolute top-1/2 right-1/3 w-1.5 h-1.5 bg-white/30 rounded-full animate-ping"
-                style={{ animationDelay: "2s", animationDuration: "3s" }}
-              ></div>
-            </div>
-          </>
-
-          {/* Front */}
-          <Card
-            className="absolute top-0 left-0 w-full h-full"
-            style={{
-              WebkitBackfaceVisibility: "hidden",
-              backfaceVisibility: "hidden",
-              transform: "rotateY(0deg)",
-              background: bg,
-            }}
-          >
-            <div className="relative flex flex-col justify-center h-full p-4 md:p-8 lg:p-12 gap-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    className={`${difficulty.bg} ${difficulty.text} border ${difficulty.border} px-3 py-1`}
-                  >
-                    <span className="mr-1">{difficulty.icon}</span>
-                    {difficulty.label}
-                  </Badge>
-
-                  <Badge
-                    className="px-3 py-1 backdrop-blur-sm"
-                    variant={"secondary"}
-                  >
-                    <span className="mr-1">{bloomLevel.icon}</span>
-                    {bloomLevel.label}
-                  </Badge>
-                </div>
-                <div className="w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center">
-                  <RotateCw className="w-5 h-5  group-hover:rotate-180 transition-transform duration-500" />
-                </div>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center px-4">
-                <div className="space-y-4 text-center">
-                  <div className="inline-block px-4 py-2 rounded-full">
-                    <span className="font-semibold">Pergunta</span>
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-bold leading-relaxed">
-                    {flashcard?.front}
-                  </h2>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2">
-                  <Info className="w-4 h-4" />
-                  Clique para revelar
-                </span>
-                <span className="flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  {difficulty.description}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Back */}
-          <Card
-            className="absolute top-0 left-0 w-full h-full"
-            style={{
-              WebkitBackfaceVisibility: "hidden",
-              backfaceVisibility: "hidden",
-              transform: "rotateY(180deg)",
-              background: bg,
-            }}
-          >
-            <div className="relative h-[400px] md:h-[500px] p-8 md:p-12 flex flex-col">
-              <div className="absolute top-0 left-0 right-0 h-1" />
-
-              <div className="flex items-start justify-between gap-4 mb-6">
-                <Badge className="px-3 py-1" variant={"outline"}>
-                  <Award className="w-4 h-4 mr-1" />
-                  Resposta
-                </Badge>
-                <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <RotateCw className="w-5 h-5 " />
-                </div>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center px-4">
-                <h2 className="text-xl md:text-3xl font-semibold  leading-relaxed text-center">
-                  {flashcard?.back}
-                </h2>
-              </div>
-
-              {flashcard?.note && (
-                <div className="mt-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-                  <p className="text-sm /80 flex items-start gap-2">
-                    <BookOpen className="w-4 h-4 mt-0.5 shrink-0" />
-                    <span>
-                      <strong>Nota:</strong> {flashcard?.note}
-                    </span>
-                  </p>
-                </div>
-              )}
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {Object.entries(difficultyConfig).map(([key, value]) => (
-          <Button
-            variant={"outline"}
-            key={key}
-            className={cn(flashcard?.difficulty === key && value.bg)}
-            disabled={flashcard?.difficulty !== key}
-          >
-            <span>{value.icon}</span> {value.label}
-          </Button>
-        ))}
+        <DeleteFlashcardButton color={""} id={id} />
       </div>
     </div>
   );
@@ -475,10 +276,11 @@ const EaseFactorCard = ({
   easeInfo: {
     label: string;
     color: string;
-    icon: string;
+    icon: LucideIcon;
   };
   easeFactor: number;
 }) => {
+  const Icon = easeInfo.icon;
   return (
     <Card className="backdrop-blur-sm">
       <div className="p-6 space-y-4">
@@ -487,7 +289,9 @@ const EaseFactorCard = ({
             <Brain className="w-5 h-5" />
             Facilidade
           </h3>
-          <span className="text-2xl">{easeInfo.icon}</span>
+          <span className="text-2xl">
+            <Icon />
+          </span>
         </div>
 
         <div className="space-y-2">
@@ -546,7 +350,7 @@ const ReviewScheduleCard = ({
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-3 text-primary-foreground bg-linear-to-br from-primary via-primary/70 to-primary/40 backdrop-blur-sm rounded-lg">
+          <div className="flex items-start gap-3 p-3 text-white bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-lg">
             <Zap className="w-5 h-5 text-primary-foreground mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">Próxima Revisão</p>
@@ -584,7 +388,7 @@ const BloomLevelCard = ({
   };
 }) => {
   return (
-    <Card className="bg-linear-to-br from-primary via-primary/60 to-primary/80 text-primary-foreground backdrop-blur-sm">
+    <Card className="bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white backdrop-blur-sm">
       <div className="p-6 space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{bloomLevel.icon}</span>

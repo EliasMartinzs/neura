@@ -69,7 +69,7 @@ export const DeckFilters = () => {
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className="text-lg"
+                className="text-lg p-0"
                 disabled={!data?.data?.length}
               >
                 Tags

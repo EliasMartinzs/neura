@@ -9,13 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/features/session/api/use-session";
-import Image from "next/image";
-import { ChevronDown, Loader2, User2 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { useTheme } from "next-themes";
+import { ChevronDown, Loader2, User2 } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import UserImage from "../../../public/avatars/undraw_chill-guy-avatar_tqsm.svg";
+import { useRouter } from "next/navigation";
 
 interface Props {
   closeDrawerMobile?: () => void;
@@ -23,6 +22,7 @@ interface Props {
 
 export const DropdownUser = ({ closeDrawerMobile }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const { user, isLoading } = useSession();
 
   if (isLoading) {
@@ -31,7 +31,7 @@ export const DropdownUser = ({ closeDrawerMobile }: Props) => {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild className="w-auto border bg-card">
+      <DropdownMenuTrigger asChild className="w-auto border">
         <button className="flex items-center justify-between gap-x-4 bg-card max-sm:p-4 p-2 rounded-full">
           <Image
             src={user?.image || UserImage}
@@ -56,9 +56,15 @@ export const DropdownUser = ({ closeDrawerMobile }: Props) => {
         <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/profile" onClick={closeDrawerMobile}>
+          <button
+            onClick={() => {
+              router.push("/dashboard/profile");
+              closeDrawerMobile;
+              setIsOpen(false);
+            }}
+          >
             Meu Perfil <User2 />
-          </Link>
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

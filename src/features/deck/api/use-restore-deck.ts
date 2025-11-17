@@ -29,6 +29,8 @@ export const useRestoreDeck = () => {
         queryClient.invalidateQueries({ queryKey: ["deck"] }),
         queryClient.invalidateQueries({ queryKey: ["trash"] }),
         queryClient.invalidateQueries({ queryKey: ["tags"] }),
+        queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
     onError: ({ message }) => {

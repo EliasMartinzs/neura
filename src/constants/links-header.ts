@@ -1,34 +1,71 @@
 import {
-  CircleUser,
+  BadgeHelpIcon,
+  Brain,
+  CircleHelp,
   House,
   Layers,
+  LucideIcon,
   RectangleHorizontal,
   Star,
+  User,
 } from "lucide-react";
 
-export const linksHeader = [
+type LinksHeader = {
+  id: number;
+  href: string | null;
+  icon: LucideIcon;
+  label: string;
+  items?: {
+    id: number;
+    href: string;
+    label: string;
+    icon: LucideIcon;
+  }[];
+};
+
+export const linksHeader: LinksHeader[] = [
   {
     id: 1,
     href: "/dashboard",
     icon: House,
-    name: "Início",
+    label: "Início",
   },
   {
     id: 2,
     href: "/dashboard/deck",
     icon: Layers,
-    name: "Deck",
+    label: "Deck",
   },
   {
     id: 3,
     href: "/dashboard/flashcards",
     icon: RectangleHorizontal,
-    name: "Flashcards",
+    label: "Flashcards",
   },
   {
     id: 4,
     href: "/dashboard/reviews",
     icon: Star,
-    name: "Reviews",
+    label: "Reviews",
+  },
+  {
+    id: 5,
+    href: "/dashboard/profile",
+    icon: User,
+    label: "Perfil",
+  },
+  {
+    id: 6,
+    href: null,
+    icon: CircleHelp,
+    label: "Sobre",
+    items: [
+      {
+        id: 1,
+        label: "Bloom Level",
+        href: "/dashboard/about/bloom-level",
+        icon: Brain,
+      },
+    ],
   },
 ] as const;

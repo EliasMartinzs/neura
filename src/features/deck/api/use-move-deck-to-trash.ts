@@ -29,6 +29,8 @@ export const useMoveDeckToTrash = () => {
         queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
         queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
         queryClient.invalidateQueries({ queryKey: ["tags"] }),
+        queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
     onError: ({ message }) => {

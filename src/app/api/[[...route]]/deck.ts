@@ -1,14 +1,16 @@
 import prisma from "@/lib/db";
+import { createActivity } from "@/lib/helpers/create-activity";
 import { authMiddleware } from "@/middlewares/auth-middleware";
 import { heavyWriteSecurityMiddleware } from "@/middlewares/heavy-write";
 import { readSecutiryMiddleware } from "@/middlewares/read";
 import { createDeckSchema } from "@/schemas/create-deck.schema";
 import { editDeckSchema } from "@/schemas/edit-deck.schema";
+import { handlePrismaError } from "@/utils/handle-prisma-error";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z from "zod";
 import { AppVariables } from "./route";
-import { handlePrismaError } from "@/utils/handle-prisma-error";
+import { decrementBloomLevel } from "@/lib/helpers/decrement-bloom-level";
 
 const app = new Hono<{
   Variables: AppVariables;
@@ -249,14 +251,60 @@ const app = new Hono<{
                 aIGeneratedCard: true,
               },
             },
+            studySessions: {
+              select: {
+                wrongCount: true,
+                correctCount: true,
+                id: true,
+              },
+            },
           },
         });
+
+        if (!deck) {
+          return c.json(
+            { code: 404, message: "Deck não encontrado", data: null },
+            404
+          );
+        }
+
+        // ✅ Cálculo da performance média do deck
+        const allGrades: number[] = [];
+        deck.flashcards.forEach((fc) => {
+          fc.reviews.forEach((r) => {
+            allGrades.push(r.grade);
+          });
+        });
+
+        const averageGrade =
+          allGrades.length > 0
+            ? allGrades.reduce((sum, g) => sum + g, 0) / allGrades.length
+            : 0;
+
+        const totalCorrect = deck.studySessions.reduce(
+          (sum, s) => sum + s.correctCount,
+          0
+        );
+        const totalWrong = deck.studySessions.reduce(
+          (sum, s) => sum + s.wrongCount,
+          0
+        );
+        const accuracyRate =
+          totalCorrect + totalWrong > 0
+            ? totalCorrect / (totalCorrect + totalWrong)
+            : 0;
 
         return c.json(
           {
             code: 200,
             mesasge: "null",
-            data: deck,
+            data: {
+              ...deck,
+              performance: {
+                averageGrade,
+                accuracyRate,
+              },
+            },
           },
           200
         );
@@ -274,12 +322,53 @@ const app = new Hono<{
       try {
         const values = c.req.valid("json");
         const user = c.get("user");
+        const userId = user?.id as string;
 
-        await prisma.deck.create({
-          data: {
-            ...values,
-            userId: user?.id as string,
-          },
+        await prisma.$transaction(async (tx) => {
+          const deck = await tx.deck.create({
+            data: {
+              ...values,
+              userId,
+            },
+          });
+
+          for (const tag of deck.tags) {
+            await tx.userTagCount.upsert({
+              where: { userId_tag: { userId, tag } },
+              update: { count: { increment: 1 } },
+              create: { userId, tag, count: 1 },
+            });
+          }
+
+          const topTags = await tx.userTagCount.findMany({
+            where: { userId },
+            orderBy: { count: "desc" },
+            take: 10,
+            select: { tag: true, count: true },
+          });
+
+          const topTagsArray = topTags.map((t) => ({
+            tag: String(t.tag),
+            count: Number(t.count),
+          }));
+
+          await tx.userStats.upsert({
+            where: { userId },
+            update: {
+              decksCount: { increment: 1 },
+              mostStudiedCategories: topTagsArray,
+            },
+            create: {
+              userId,
+              decksCount: 1,
+              mostStudiedCategories: topTagsArray,
+            },
+          });
+
+          await createActivity({
+            userId: userId,
+            type: "CREATE_DECK",
+          });
         });
 
         return c.json(
@@ -303,16 +392,80 @@ const app = new Hono<{
     async (c) => {
       const user = c.get("user");
       const values = c.req.valid("json");
+      const userId = user?.id as string;
 
       try {
-        await prisma.deck.update({
-          where: {
-            userId: user?.id,
-            id: values.id,
-          },
-          data: {
-            ...values,
-          },
+        await prisma.$transaction(async (tx) => {
+          const oldDeck = await tx.deck.findUnique({
+            where: {
+              id: values.id,
+            },
+            select: { tags: true },
+          });
+
+          if (!oldDeck) {
+            return c.json(
+              {
+                code: 404,
+                message: "Registro não encontrado!",
+                data: null,
+              },
+              404
+            );
+          }
+
+          const oldTags = oldDeck.tags;
+          const newTags = values.tags || [];
+
+          const removedTags = oldDeck.tags.filter((t) => !newTags.includes(t));
+          for (const tag of removedTags) {
+            await tx.userTagCount.updateMany({
+              where: { userId, tag },
+              data: { count: { decrement: 1 } },
+            });
+            await tx.userTagCount.deleteMany({
+              where: { userId, tag, count: { lte: 0 } },
+            });
+          }
+
+          const addedTags = newTags.filter((t) => !oldTags.includes(t));
+          for (const tag of addedTags) {
+            await tx.userTagCount.upsert({
+              where: { userId_tag: { userId, tag } },
+              update: { count: { increment: 1 } },
+              create: { userId, tag, count: 1 },
+            });
+          }
+
+          await tx.deck.update({
+            where: {
+              id: values.id,
+            },
+            data: {
+              ...values,
+            },
+          });
+
+          const topTags = await tx.userTagCount.findMany({
+            where: { userId },
+            orderBy: { count: "desc" },
+            take: 10,
+            select: { tag: true },
+          });
+
+          await tx.userStats.upsert({
+            where: { userId },
+            update: { mostStudiedCategories: topTags.map((t) => t.tag) },
+            create: {
+              userId,
+              mostStudiedCategories: topTags.map((t) => t.tag),
+            },
+          });
+
+          await createActivity({
+            userId: userId,
+            type: "UPDATE_DECK",
+          });
         });
 
         return c.json(
@@ -342,15 +495,67 @@ const app = new Hono<{
       try {
         const user = c.get("user");
         const { id } = c.req.valid("json");
+        const userId = user?.id as string;
 
-        await prisma.deck.update({
-          where: {
-            userId: user?.id,
-            id: id,
-          },
-          data: {
-            deletedAt: null,
-          },
+        await prisma.$transaction(async (tx) => {
+          const deck = await tx.deck.update({
+            where: {
+              userId,
+              id,
+            },
+            data: {
+              deletedAt: null,
+            },
+          });
+
+          await tx.flashcard.updateMany({
+            where: {
+              deckId: deck.id,
+            },
+            data: {
+              deletedAt: null,
+            },
+          });
+
+          for (const tag of deck.tags) {
+            await tx.userTagCount.upsert({
+              where: { userId_tag: { userId, tag } },
+              update: { count: { increment: 1 } },
+              create: { userId, tag, count: 1 },
+            });
+          }
+
+          const topTags = await tx.userTagCount.findMany({
+            where: { userId },
+            orderBy: { count: "desc" },
+            take: 10,
+            select: { tag: true, count: true },
+          });
+
+          const topTagsArray = topTags.map((t) => ({
+            tag: t.tag,
+            count: t.count,
+          }));
+
+          await tx.userStats.upsert({
+            where: { userId },
+            update: {
+              decksCount: { increment: 1 },
+              flashcardsCreated: { increment: 1 },
+              mostStudiedCategories: topTagsArray,
+            },
+            create: {
+              userId,
+              decksCount: 1,
+              mostStudiedCategories: topTagsArray,
+            },
+          });
+
+          await createActivity({
+            userId: userId,
+            type: "OTHER",
+            message: "Deck restaurado com sucesso!",
+          });
         });
 
         return c.json(
@@ -377,18 +582,74 @@ const app = new Hono<{
       })
     ),
     async (c) => {
-      const user = c.get("user");
-      const { id } = c.req.valid("param");
-
       try {
-        await prisma.deck.update({
-          where: {
-            userId: user?.id,
-            id: id,
-          },
-          data: {
-            deletedAt: new Date(),
-          },
+        const user = c.get("user");
+        const { id } = c.req.valid("param");
+        const userId = user?.id as string;
+
+        await prisma.$transaction(async (tx) => {
+          const deck = await tx.deck.findUnique({
+            where: { id: id },
+            select: { tags: true, id: true },
+          });
+
+          if (!deck) {
+            return c.json(
+              {
+                code: 404,
+                message: "Registro não encontrado",
+                data: null,
+              },
+              404
+            );
+          }
+
+          for (const tag of deck.tags) {
+            await tx.userTagCount.updateMany({
+              where: { userId, tag },
+              data: { count: { decrement: 1 } },
+            });
+
+            await tx.userTagCount.deleteMany({
+              where: { userId, tag, count: { lte: 0 } },
+            });
+          }
+
+          await tx.deck.update({
+            where: { id },
+            data: { deletedAt: new Date() },
+          });
+
+          await tx.flashcard.updateMany({
+            where: {
+              deckId: deck.id,
+            },
+            data: {
+              deletedAt: new Date(),
+            },
+          });
+
+          const topTags = await tx.userTagCount.findMany({
+            where: { userId },
+            orderBy: { count: "desc" },
+            take: 10,
+            select: { tag: true },
+          });
+
+          await tx.userStats.update({
+            where: { userId },
+            data: {
+              decksCount: { decrement: 1 },
+              flashcardsCreated: { decrement: 1 },
+              mostStudiedCategories: topTags.map((t) => t.tag),
+            },
+          });
+
+          await createActivity({
+            userId: userId,
+            type: "OTHER",
+            message: "Deck movido para a lixeira!",
+          });
         });
 
         return c.json(
@@ -427,6 +688,12 @@ const app = new Hono<{
           },
         });
 
+        await createActivity({
+          userId: user?.id as string,
+          type: "OTHER",
+          message: "Deletado multiplos decks",
+        });
+
         return c.json(
           {
             code: 200,
@@ -455,11 +722,35 @@ const app = new Hono<{
       const { id } = c.req.valid("param");
 
       try {
-        await prisma.deck.delete({
-          where: {
-            userId: user?.id,
-            id: id,
-          },
+        await prisma.$transaction(async (tx) => {
+          const flashcards = await tx.flashcard.findMany({
+            where: { deckId: id, userId: user?.id },
+            select: { bloomLevel: true },
+          });
+
+          for (const card of flashcards) {
+            if (card.bloomLevel) {
+              await decrementBloomLevel({
+                client: tx,
+                userId: user?.id as string,
+                bloomLevel: card.bloomLevel,
+              });
+            }
+          }
+
+          await tx.deck.delete({
+            where: {
+              userId: user?.id,
+              id: id,
+            },
+          });
+
+          // 4️⃣ Registrar atividade
+          await createActivity({
+            userId: user?.id as string,
+            type: "DELETE_DECK",
+            client: tx,
+          });
         });
 
         return c.json(

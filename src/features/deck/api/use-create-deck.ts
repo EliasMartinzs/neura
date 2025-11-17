@@ -20,7 +20,11 @@ export const useCreateDeck = () => {
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["deck"] });
+      queryClient.invalidateQueries({ queryKey: ["session"] });
       queryClient.invalidateQueries({ queryKey: ["tags"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      queryClient.invalidateQueries({ queryKey: ["flashcard"] });
     },
     onError: ({ message }) => {
       toast.error(message);

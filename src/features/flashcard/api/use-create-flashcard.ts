@@ -18,9 +18,13 @@ export const useCreateFlashcard = () => {
 
       return await res.json();
     },
-    onSuccess: ({ message }) => {
+    onSuccess: async ({ message }) => {
       toast.success(message);
-      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
+        queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
+      ]);
     },
     onError: ({ message }) => {
       toast.error(message);

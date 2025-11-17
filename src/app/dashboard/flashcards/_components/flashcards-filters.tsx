@@ -24,12 +24,12 @@ export const FlashcardsFilters = () => {
     <div className="space-y-6">
       <Separator orientation="horizontal" />
       <h2 className="text-lg capitalize font-semibold lg:text-2xl">Filtros</h2>
-      <div className="w-full flex max-sm:flex-col gap-4 items-center justify-between">
+      <div className="w-full flex max-sm:flex-col gap-4 justify-between">
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className="text-lg"
+                className="text-lg p-0"
                 disabled={!decks?.length}
               >
                 Decks

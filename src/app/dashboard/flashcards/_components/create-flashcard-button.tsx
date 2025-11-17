@@ -6,18 +6,23 @@ import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 import { useGetDeckNames } from "@/features/deck/api/use-get-deck-names";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { FlashcardForm } from "./create-flashcard-form";
-import { Sparkles } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Brain, Sparkles, User } from "lucide-react";
+import { FlashcardForm } from "./flashcard-form";
+import { FlashcardGeneration } from "./flashcard-generation";
 
 export const CreateFlashcardButton = ({
   trigger,
+  deckId,
 }: {
   trigger: React.ReactNode;
+  deckId?: string;
 }) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const openModalFlashcard = searchParams.get("open-modal-flashcard");
+  const [type, setType] = useState(false);
 
   useEffect(() => {
     if (openModalFlashcard) {
@@ -49,13 +54,40 @@ export const CreateFlashcardButton = ({
         <p className="text-foreground mt-2">
           Organize seus estudos de forma inteligente
         </p>
-        <FlashcardForm
-          close={setOpen}
-          decks={decks}
-          router={router}
-          openModalFlashcard={openModalFlashcard}
-          isLoadingDeckNames={isLoading}
-        />
+
+        <div className="w-full flex items-center justify-center mt-10">
+          <div className="flex items-center gap-4">
+            <p className="inline-flex items-center gap-x-3">
+              <User className="size-5 text-primary" /> Manual
+            </p>
+            <Switch checked={type} onCheckedChange={(e) => setType(e)} />
+            <p className="inline-flex items-center gap-x-3">
+              Gerar com IA
+              <Brain className="size-5 text-primary" />
+            </p>
+          </div>
+        </div>
+
+        <div className="my-4">
+          {!type ? (
+            <FlashcardForm
+              close={setOpen}
+              decks={decks}
+              router={router}
+              openModalFlashcard={openModalFlashcard}
+              isLoadingDeckNames={isLoading}
+              deckId={deckId}
+            />
+          ) : (
+            <FlashcardGeneration
+              close={setOpen}
+              decks={decks}
+              router={router}
+              isLoadingDeckNames={isLoading}
+              deckId={deckId}
+            />
+          )}
+        </div>
       </div>
     </ResponsiveDialog>
   );

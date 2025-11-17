@@ -7,14 +7,14 @@ import { BloomLevel, FlashcardDifficulty } from "@prisma/client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-export function useCreateFlashcardForm() {
-  const [step, setStep] = useState(1);
+export function useCreateFlashcardForm({ deckId }: { deckId?: string }) {
+  const [step, setStep] = useState(deckId ? 2 : 1);
 
   const form = useForm<CreateFlashcardForm>({
     resolver: zodResolver(createFlashcardSchema),
     mode: "onTouched",
     defaultValues: {
-      deckId: "",
+      deckId: deckId || "",
       front: "",
       back: "",
       topic: "",

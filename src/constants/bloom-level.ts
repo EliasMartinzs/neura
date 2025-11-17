@@ -45,3 +45,5 @@ export const bloomLevels = [
     description: "Produzir algo novo",
   },
 ];
+
+export type BloomLevelType = keyof typeof BloomLevel;

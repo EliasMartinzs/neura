@@ -25,9 +25,8 @@ export function ModeToggle() {
   const isDark = theme === "dark";
 
   return (
-    <Button
+    <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      variant={"ghost"}
       aria-label={`Ativar modo ${isDark ? "claro" : "escuro"}`}
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -59,6 +58,6 @@ export function ModeToggle() {
           </motion.span>
         )}
       </AnimatePresence>
-    </Button>
+    </button>
   );
 }

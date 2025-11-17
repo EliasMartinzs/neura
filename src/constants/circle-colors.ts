@@ -17,8 +17,6 @@ export const circleColors = [
   { background: "#ff5722", foreground: "#fff" },
   { background: "#795548", foreground: "#fff" },
   { background: "#607d8b", foreground: "#fff" },
-  { background: "#000000", foreground: "#fff" },
-  { background: "#ffffff", foreground: "#000" },
 ] as const;
 
 export function getForeground(bg: string) {

@@ -23,21 +23,8 @@ type Props = {
   flashcard: Flashcard;
 };
 
-export const FlashcardCard = ({ flashcard }: Props) => {
+export const FlashcardItem = ({ flashcard }: Props) => {
   const router = useRouter();
-
-  // Calcular taxa de acerto das revisões
-  const calculateAccuracy = () => {
-    if (!flashcard.reviews || flashcard.reviews.length === 0) return null;
-    const totalGrades = flashcard.reviews.reduce(
-      (sum, review) => sum + review.grade,
-      0
-    );
-    const maxPossible = flashcard.reviews.length * 5;
-    return Math.round((totalGrades / maxPossible) * 100);
-  };
-
-  const accuracy = calculateAccuracy();
 
   return (
     <div className="relative group w-auto">
@@ -45,7 +32,7 @@ export const FlashcardCard = ({ flashcard }: Props) => {
       <DecorativesAndAnimations color={flashcard.color} />
 
       {/* Card */}
-      <Card accuracy={accuracy} flashcard={flashcard} router={router} />
+      <Card flashcard={flashcard} router={router} />
 
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-transparent via-white to-transparent opacity-40"></div>
     </div>
@@ -85,11 +72,9 @@ const DecorativesAndAnimations = ({ color }: { color: string | null }) => (
 const Card = ({
   flashcard,
   router,
-  accuracy,
 }: {
   flashcard: Flashcard;
   router: AppRouterInstance;
-  accuracy: number | null;
 }) => {
   const {
     id,
@@ -121,7 +106,6 @@ const Card = ({
       <div className="relative px-6 py-4">
         <MainStats
           _count={_count}
-          accuracy={accuracy}
           difficulty={difficulty}
           performanceAvg={performanceAvg}
           repetition={repetition}
@@ -192,13 +176,11 @@ const HeaderFront = ({
 
 const MainStats = ({
   _count,
-  accuracy,
   difficulty,
   performanceAvg,
   repetition,
 }: {
   _count: { reviews: number };
-  accuracy: number | null;
   repetition: number;
   difficulty: $Enums.FlashcardDifficulty | null;
   performanceAvg: number | null;
@@ -215,10 +197,10 @@ const MainStats = ({
 
         {/* Accuracy or Repetition */}
         <div className="bg-white/10 rounded-lg p-3 flex flex-col items-center justify-center">
-          {accuracy !== null ? (
+          {0 !== null ? (
             <>
               <TrendingUp className="w-6 h-6 text-green-300 mb-1" />
-              <div className="text-2xl font-bold ">{accuracy}%</div>
+              <div className="text-2xl font-bold ">{0}%</div>
               <div className="/70 text-xs font-medium">Acertos</div>
             </>
           ) : (

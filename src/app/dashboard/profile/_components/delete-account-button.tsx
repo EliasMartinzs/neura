@@ -69,9 +69,9 @@ export function DeleteAccountButton() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="lg">
-          Deleta minha conta
-        </Button>
+        <button className="px-6 py-3 bg-red-500/30 border-2 border-red-500/50 rounded-xl text-red-300 font-semibold hover:bg-red-500/40 hover:border-red-500 transition-all">
+          Excluir Minha Conta
+        </button>
       </DialogTrigger>
       <DialogContent className="space-y-3">
         <DialogHeader>
@@ -106,22 +106,20 @@ export function DeleteAccountButton() {
               )}
             />
             <div className="flex gap-2 justify-end">
-              <Button
+              <button
                 onClick={() => setIsOpen(false)}
-                size={"lg"}
-                variant={"outline"}
+                className="px-6 py-3 bg-slate-500/30 border border-slate-500/50 rounded-xl text-slate-300 font-semibold hover:bg-slate-500/40 hover:border-slate-500 transition-all"
                 disabled={isSubmitting}
               >
                 Cancelar
-              </Button>
-              <Button
+              </button>
+              <button
                 type="submit"
-                variant={"destructive"}
-                size={"lg"}
+                className="px-6 py-3 bg-red-500/30 border border-red-500/50 rounded-xl text-red-300 font-semibold hover:bg-red-500/40 hover:border-red-500 transition-all"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Deletando..." : "Deletar"}
-              </Button>
+              </button>
             </div>
           </form>
         </Form>

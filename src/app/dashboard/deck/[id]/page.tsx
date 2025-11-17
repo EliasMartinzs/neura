@@ -3,15 +3,17 @@
 import { useParams } from "next/navigation";
 import ErroImage from "../../../../../public/undraw_connection-lost.svg";
 
+import { BreadcrumbCustom } from "@/components/shared/breadcrumb-custom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { DIFFICULTY } from "@/constants/difficulty";
 import { useGetDeck } from "@/features/deck/api/use-get-deck";
 import { ResponseGetDecks } from "@/features/deck/api/use-get-decks";
-import { cn } from "@/lib/utils";
+import { useResetStudy } from "@/features/study/use-reset-study";
+import { useStartStudy } from "@/features/study/use-start-session";
 import { DeckDifficulty } from "@prisma/client";
 import {
   Activity,
-  ArrowLeft,
   Award,
   BarChart3,
   BookOpen,
@@ -20,31 +22,30 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  Edit3,
   Flame,
   Loader2,
   Play,
   Plus,
+  RotateCcw,
   Search,
   Sparkles,
   Star,
   Tag,
   Target,
-  Trash2,
   TrendingUp,
   Trophy,
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import { getForeground } from "@/constants/circle-colors";
-import { Input } from "@/components/ui/input";
+import { CreateFlashcardButton } from "../../flashcards/_components/create-flashcard-button";
 import { EditDeckButton } from "../_components/edit-deck-button";
 import { MoveTrashButton } from "../_components/move-trash-button";
-import { CreateFlashcardButton } from "../../flashcards/_components/create-flashcard-button";
-import Link from "next/link";
+import { DeleteFlashcardButton } from "../../flashcards/_components/delete-flashcard-button";
 
 type Deck = NonNullable<NonNullable<ResponseGetDecks>["data"]>[number];
+
 type Flashcard = NonNullable<
   NonNullable<ResponseGetDecks>["data"]
 >[number]["flashcards"];
@@ -56,6 +57,8 @@ export default function DeckPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { deck, isLoading, isError, refetch, isFetching } = useGetDeck(id);
+  const { mutate: mutateStart } = useStartStudy();
+  const { mutate: mutateReset } = useResetStudy(deck?.studySessions[0]?.id!);
 
   if (isLoading) {
     return (
@@ -97,46 +100,22 @@ export default function DeckPage() {
     return <></>;
   }
 
-  const { _count, flashcards, lastStudiedAt, tags } = deck;
-
-  const totalReviews = flashcards.reduce(
-    (sum, fc) => sum + fc.reviews.length,
-    0
-  );
-
-  const averagePerformance =
-    flashcards.length > 0
-      ? flashcards.reduce((sum, fc) => sum + (fc.performanceAvg || 0), 0) /
-        flashcards.length
-      : 0;
-
-  const calculateOverallAccuracy = () => {
-    const allReviews = flashcards.flatMap((fc) => fc.reviews);
-    if (allReviews.length === 0) return 0;
-    const totalGrades = allReviews.reduce(
-      (sum, review) => sum + review.grade,
-      0
-    );
-    const maxPossible = allReviews.length * 5;
-    return Math.round((totalGrades / maxPossible) * 100);
-  };
-
-  const overallAccuracy = calculateOverallAccuracy();
-
-  const cardsToReview = flashcards.filter(
-    (fc) => !fc.nextReview || new Date(fc.nextReview) <= new Date()
-  ).length;
-
-  const studyStreak = lastStudiedAt
-    ? Math.floor(
-        (Date.now() - new Date(lastStudiedAt).getTime()) / (1000 * 60 * 60 * 24)
-      )
-    : 0;
+  const { flashcards, tags, performance } = deck;
 
   const displayedTags = showAllTags ? tags : tags.slice(0, 6);
   const filteredFlashcards = flashcards.filter((fc) =>
     fc.front.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  async function handleStartStudy() {
+    mutateStart({
+      deckId: id,
+    });
+  }
+
+  async function handleResetStudy() {
+    mutateReset();
+  }
 
   return (
     <div className="max-w-7xl mx-auto relative z-10 space-y-8">
@@ -144,26 +123,26 @@ export default function DeckPage() {
       <Animations />
 
       {/* Back to decks */}
-      <Breadcrumb />
+      <BreadcrumbCustom href="/dashboard/deck" label="Voltar para Decks" />
 
       {/* Card */}
       <Card
-        cardsToReview={cardsToReview}
         deck={deck}
         displayedTags={displayedTags}
-        studyStreak={studyStreak}
         setShowAllTags={setShowAllTags}
         showAllTags={showAllTags}
+        handleStartStudy={handleStartStudy}
+        handleResetStudy={handleResetStudy}
       />
 
       {/* Stats */}
       <Stats
-        averagePerformance={averagePerformance}
         expandedStats={expandedStats}
-        overallAccuracy={overallAccuracy}
         setExpandedStats={setExpandedStats}
-        totalReviews={totalReviews}
-        countFlashcards={_count.flashcards}
+        totalCards={deck._count.flashcards}
+        reviewCount={deck.reviewCount}
+        accuracyRate={performance.accuracyRate}
+        averageGrade={performance.averageGrade}
       />
 
       {/* Search Flashcard */}
@@ -198,18 +177,6 @@ const Animations = () => {
   );
 };
 
-const Breadcrumb = () => {
-  return (
-    <Link
-      href="/dashboard/deck"
-      className="flex items-center gap-2  hover:transition-all mb-6 group px-4 py-2 rounded-xl hover:bg-white/5 w-fit"
-    >
-      <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform duration-300" />
-      <span className="font-medium">Voltar para Decks</span>
-    </Link>
-  );
-};
-
 const Card = ({
   deck: {
     _count,
@@ -224,18 +191,18 @@ const Card = ({
     id,
     reviewCount,
   },
-  cardsToReview,
   displayedTags,
-  studyStreak,
   setShowAllTags,
   showAllTags,
+  handleStartStudy,
+  handleResetStudy,
 }: {
   deck: Deck;
-  cardsToReview: number;
-  studyStreak: number;
   displayedTags: string[];
   setShowAllTags: (prev: boolean) => void;
   showAllTags: boolean;
+  handleStartStudy: () => void;
+  handleResetStudy: () => void;
 }) => {
   return (
     <div className="relative">
@@ -290,8 +257,20 @@ const Card = ({
               size={"lg"}
               variant="icon"
               className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:rotate-12 border border-white/20 shadow-lg group"
+              onClick={handleStartStudy}
+              disabled={flashcards.length === 0}
             >
               <Play className="w-5 h-5 group-hover:text-green-100 " />
+            </Button>
+
+            <Button
+              size={"lg"}
+              variant="icon"
+              className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:rotate-12 border border-white/20 shadow-lg group"
+              onClick={handleResetStudy}
+              disabled={flashcards.length === 0}
+            >
+              <RotateCcw className="w-5 h-5 group-hover:text-green-100 " />
             </Button>
 
             <EditDeckButton
@@ -313,6 +292,7 @@ const Card = ({
             <MoveTrashButton id={id} redirect="/dashboard/deck" />
 
             <CreateFlashcardButton
+              deckId={id}
               trigger={
                 <Button
                   size={"lg"}
@@ -332,20 +312,16 @@ const Card = ({
                 {_count.flashcards} cards
               </span>
             </div>
-            {cardsToReview > 0 && (
+            {0 > 0 && (
               <div className="flex items-center gap-2 bg-white/15 backdrop-blur-xl px-4 py-2 rounded-full border border-white/20 animate-pulse">
                 <Flame className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-bold">
-                  {cardsToReview} para revisar
-                </span>
+                <span className="text-sm font-bold">{0} para revisar</span>
               </div>
             )}
-            {studyStreak < 7 && lastStudiedAt && (
+            {0 < 7 && lastStudiedAt && (
               <div className="flex items-center gap-2 bg-orange-500/20 backdrop-blur-xl px-4 py-2 rounded-full border border-orange-400/30">
                 <Trophy className="w-4 h-4 text-orange-300" />
-                <span className="text-sm font-bold">
-                  {studyStreak}d sem estudar
-                </span>
+                <span className="text-sm font-bold">{0}d sem estudar</span>
               </div>
             )}
           </div>
@@ -422,19 +398,19 @@ const Card = ({
 };
 
 const Stats = ({
-  averagePerformance,
   expandedStats,
-  overallAccuracy,
   setExpandedStats,
-  totalReviews,
-  countFlashcards,
+  totalCards,
+  reviewCount,
+  accuracyRate,
+  averageGrade,
 }: {
   setExpandedStats: (prev: boolean) => void;
   expandedStats: boolean;
-  totalReviews: number;
-  overallAccuracy: number;
-  averagePerformance: number;
-  countFlashcards: number;
+  totalCards: number;
+  reviewCount: number | null;
+  accuracyRate: number;
+  averageGrade: number;
 }) => {
   return (
     <>
@@ -456,14 +432,14 @@ const Stats = ({
       {expandedStats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div className="relative group cursor-pointer">
-            <div className="relative text-primary-foreground bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-sm rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
+            <div className="relative border shadow rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 bg-linear-to-br from-blue-500/30 to-cyan-500/30 rounded-xl group-hover:scale-110 transition-transform">
                   <BookOpen className="w-7 h-7 text-blue-700 dark:text-blue-300" />
                 </div>
                 <Sparkles className="w-5 h-5 text-blue-700 dark:text-blue-300 animate-pulse" />
               </div>
-              <div className="text-5xl font-black mb-2 ">{countFlashcards}</div>
+              <div className="text-5xl font-black mb-2 ">{totalCards}</div>
               <div className="text-blue-700 dark:text-blue-300/80 text-sm font-semibold uppercase tracking-wide">
                 Total de Cards
               </div>
@@ -472,14 +448,14 @@ const Stats = ({
           </div>
 
           <div className="relative group cursor-pointer">
-            <div className="relative text-primary-foreground bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-sm rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
+            <div className="relative border shadow rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 bg-linear-to-br from-purple-500/30 to-pink-500/30 rounded-xl group-hover:scale-110 transition-transform">
                   <Activity className="w-7 h-7 text-purple-700 dark:text-purple-300" />
                 </div>
                 <Trophy className="w-5 h-5 text-purple-700 dark:text-purple-300 group-hover:rotate-12 transition-transform" />
               </div>
-              <div className="text-5xl font-black mb-2 ">{totalReviews}</div>
+              <div className="text-5xl font-black mb-2 ">{reviewCount}</div>
               <div className="text-purple-700 dark:text-purple-300/80 text-sm font-semibold uppercase tracking-wide">
                 Revisões Feitas
               </div>
@@ -488,7 +464,7 @@ const Stats = ({
           </div>
 
           <div className="relative group cursor-pointer">
-            <div className="relative text-primary-foreground bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-sm rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
+            <div className="relative border shadow rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 bg-linear-to-br from-green-500/30 to-emerald-500/30 rounded-xl group-hover:scale-110 transition-transform">
                   <TrendingUp className="w-7 h-7 text-green-700 dark:text-green-300" />
@@ -496,7 +472,11 @@ const Stats = ({
                 <Award className="w-5 h-5 text-green-700 dark:text-green-300 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-5xl font-black mb-2 ">
-                {overallAccuracy}%
+                {new Intl.NumberFormat("pt-BR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(accuracyRate * 100)}
+                %
               </div>
               <div className="text-green-700 dark:text-green-300/80 text-sm font-semibold uppercase tracking-wide">
                 Taxa de Acerto
@@ -506,7 +486,7 @@ const Stats = ({
           </div>
 
           <div className="relative group cursor-pointer">
-            <div className="relative text-primary-foreground bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-sm rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
+            <div className="relative border shadow rounded-2xl p-6 transform transition-transform duration-300 group-hover:scale-105">
               <div className="flex items-start justify-between mb-4">
                 <div className="p-3 bg-linear-to-br from-yellow-500/30 to-orange-500/30 rounded-xl group-hover:scale-110 transition-transform">
                   <Brain className="w-7 h-7 text-yellow-700 dark:text-yellow-300" />
@@ -514,7 +494,10 @@ const Stats = ({
                 <Zap className="w-5 h-5 text-yellow-700 dark:text-yellow-300 group-hover:rotate-12 transition-transform" />
               </div>
               <div className="text-5xl font-black mb-2 ">
-                {averagePerformance.toFixed(1)}
+                {new Intl.NumberFormat("pt-BR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(averageGrade)}
               </div>
               <div className="text-yellow-700 dark:text-yellow-300/80 text-sm font-semibold uppercase tracking-wide">
                 Performance Média
@@ -539,16 +522,10 @@ const InputSearch = ({
 }) => {
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-      <h2 className="text-2xl md:text-3xl font-black flex items-center gap-3">
-        <div
-          className={cn(
-            "p-2 rounded-xl text-primary-foreground bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-sm"
-          )}
-        >
-          <BookOpen className="w-7 h-7 text-foreground" />
-        </div>
-        Flashcards <span>({filteredFlashcards.length})</span>
-      </h2>
+      <div className="flex items-center gap-3 hover:transition-all group px-4 py-2 rounded-xl hover:bg-white/5">
+        <BookOpen className="w-6 h-6 group-hover:scale-110 transition-transform" />
+        <span className="font-bold text-xl">Flashcards</span>
+      </div>
 
       <div className="flex items-center gap-3 w-full md:w-auto">
         <div className="relative flex-1 md:flex-initial">
@@ -589,17 +566,17 @@ const SearchedFlashcard = ({
     <>
       {filteredFlashcards.length === 0 ? (
         <div className="relative group">
-          <div className="absolute -inset-1 text-primary-foreground bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-xl rounded-2xl"></div>
+          <div className="absolute -inset-1 text-primary-foreground bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-2xl"></div>
           <div className="relative rounded-3xl p-16 text-center">
-            <div className="inline-block p-6 bg-linear-to-br from-purple-500/20 to-pink-500/20 rounded-3xl mb-6">
+            <div className="inline-block p-6 bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90  rounded-4xl mb-6">
               <BookOpen className="w-20 h-20 text-purple-400/50" />
             </div>
-            <p className="text-xl font-semibold mb-2">
+            <p className="text-xl font-semibold mb-2 text-white">
               {searchTerm
                 ? "Nenhum flashcard encontrado"
                 : "Nenhum flashcard neste deck ainda"}
             </p>
-            <p className=" text-sm">
+            <p className="text-white text-sm">
               {searchTerm
                 ? "Tente buscar por outro termo"
                 : "Crie seu primeiro flashcard para começar a estudar!"}
@@ -609,29 +586,28 @@ const SearchedFlashcard = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredFlashcards.map((flashcard) => {
-            const accuracy =
-              flashcard.reviews.length > 0
-                ? Math.round(
-                    (flashcard.reviews.reduce((sum, r) => sum + r.grade, 0) /
-                      (flashcard.reviews.length * 5)) *
-                      100
-                  )
-                : null;
+            const allGrades = flashcard.reviews.map((r: any) => r.grade);
+            const averageGrade =
+              allGrades.length > 0
+                ? allGrades.reduce((sum: number, g: number) => sum + g, 0) /
+                  allGrades.length
+                : 0;
+
+            const percentage = Math.round(averageGrade ?? 0);
 
             return (
               <div key={flashcard.id} className="relative group cursor-pointer">
-                <div className="relative bg-linear-to-br from-primary/15 via-primary/10 to-primary/5 backdrop-blur-sm rounded-2xl p-6 transition-all duration-300 group-hover:scale-105 overflow-hidden h-full flex flex-col">
-                  {accuracy !== null && accuracy >= 80 && (
-                    <div className="absolute top-3 right-3">
-                      <div className="p-1.5 bg-linear-to-br from-yellow-500/30 to-orange-500/30 rounded-lg">
-                        <Star className="w-4 h-4 text-yellow-500" />
-                      </div>
-                    </div>
-                  )}
+                <div className="relative rounded-2xl p-6 transition-all duration-300 group-hover:scale-105 overflow-hidden h-full flex flex-col gap-y-4 border">
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={`/dashboard/flashcards/${flashcard.id}`}
+                      className="font-bold text-lg mb-4 line-clamp-3 transition-colors leading-tight flex-1 hover:underline"
+                    >
+                      {flashcard.front || "Flashcard"}
+                    </Link>
 
-                  <h3 className="font-bold text-lg mb-4 line-clamp-3 group-hover:text-purple-300 transition-colors leading-tight flex-1">
-                    {flashcard.front || "Flashcard"}
-                  </h3>
+                    <DeleteFlashcardButton color={""} id={flashcard.id} />
+                  </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-3">
@@ -641,38 +617,20 @@ const SearchedFlashcard = ({
                           {flashcard.reviews.length} revisões
                         </span>
                       </div>
-                      {accuracy !== null && (
-                        <div className="flex items-center gap-2">
-                          <div className="text-sm font-bold text-green-400">
-                            {accuracy}%
+                      {averageGrade !== null && averageGrade >= 80 && (
+                        <div>
+                          <div className="p-1.5 bg-linear-to-br from-yellow-500/30 to-orange-500/30 rounded-lg">
+                            <Star className="w-4 h-4 text-yellow-500" />
                           </div>
                         </div>
                       )}
                     </div>
+                  </div>
 
-                    {flashcard.performanceAvg !== null && (
-                      <div className="flex items-center gap-3 rounded-lg p-2">
-                        <Brain className="w-4 h-4 text-purple-400" />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs ">Performance</span>
-                            <span className="text-xs font-bold">
-                              {flashcard.performanceAvg.toFixed(1)}/5.0
-                            </span>
-                          </div>
-                          <div className="h-1.5 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-linear-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
-                              style={{
-                                width: `${
-                                  (flashcard.performanceAvg / 5) * 100
-                                }%`,
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                  <div className="stars">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i}>{i < percentage ? "★" : "☆"}</span>
+                    ))}
                   </div>
                 </div>
               </div>

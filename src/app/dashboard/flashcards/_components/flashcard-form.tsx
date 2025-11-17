@@ -45,6 +45,7 @@ export const FlashcardForm = ({
   router,
   openModalFlashcard,
   isLoadingDeckNames,
+  deckId,
 }: {
   close: (close: boolean) => void;
   decks:
@@ -61,10 +62,13 @@ export const FlashcardForm = ({
   router: AppRouterInstance;
   openModalFlashcard: string | null;
   isLoadingDeckNames: boolean;
+  deckId?: string;
 }) => {
-  const { step, nextStep, prevStep, form } = useCreateFlashcardForm();
+  const { step, nextStep, prevStep, form } = useCreateFlashcardForm({ deckId });
 
   const { mutate, isPending } = useCreateFlashcard();
+
+  const isLoading = form.formState.isSubmitting || isPending;
 
   async function handleCreateFlashcard(data: CreateFlashcardForm) {
     mutate(data, {
@@ -223,6 +227,7 @@ export const FlashcardForm = ({
                       placeholder="Qin Shi Huang, o primeiro imperador da dinastia Qin, unificou a China em 221 a.C."
                       className="placeholder:text-lg text-lg"
                       rows={4}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -260,15 +265,15 @@ export const FlashcardForm = ({
                             <div
                               key={key}
                               className={cn(
-                                "flex items-center gap-x-2 border p-2 rounded-xl hover:bg-primary group hover:text-primary-foreground duration-200 ease-in transition-all shadow",
+                                "flex items-center gap-x-2 border p-2 rounded-xl group duration-200 ease-in transition-all shadow hover:outline",
                                 form.watch("difficulty") === key &&
-                                  "bg-primary text-primary-foreground"
+                                  "bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white"
                               )}
                               onClick={() => field.onChange(key)}
                             >
                               <Icon
                                 className={cn(
-                                  "text-primary size-5 group-hover:text-primary-foreground",
+                                  "text-primary size-5",
                                   form.watch("difficulty") === key &&
                                     "text-primary-foreground"
                                 )}
@@ -306,7 +311,7 @@ export const FlashcardForm = ({
                           </p>
 
                           <Link
-                            href={"/dashboard/help/bloom-level"}
+                            href={"/dashboard/about/bloom-level"}
                             className={buttonVariants({
                               size: "lg",
                             })}
@@ -327,9 +332,9 @@ export const FlashcardForm = ({
                           <div
                             key={index}
                             className={cn(
-                              "border p-4 rounded-xl flex flex-col items-start justify-center text-base gap-1 hover:bg-primary transition-all duration-200 ease-in",
+                              "border p-4 rounded-xl flex flex-col items-start justify-center text-base gap-1 hover:outline transition-all duration-200 ease-in",
                               form.getValues("bloomLevel") === value &&
-                                "bg-primary"
+                                "bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white"
                             )}
                             onClick={() => field.onChange(value)}
                           >
@@ -363,7 +368,7 @@ export const FlashcardForm = ({
                           key={color.background}
                           type="button"
                           onClick={() => field.onChange(color.background)}
-                          // disabled={isLoading}
+                          disabled={isLoading}
                           className={`w-full aspect-square rounded-xl transition-all transform hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed ${
                             field.value === color.background
                               ? "ring-1 ring-offset-1 ring-purple-500 scale-110"
@@ -417,6 +422,7 @@ export const FlashcardForm = ({
                     <Input
                       {...field}
                       placeholder="História → (Unificação da China)"
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -473,6 +479,7 @@ export const FlashcardForm = ({
                     <Input
                       {...field}
                       placeholder="História → (Unificação da China)"
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -482,13 +489,14 @@ export const FlashcardForm = ({
           </>
         )}
 
-        <div className="flex justify-end gap-2">
+        <div className={cn("flex justify-end gap-2", isLoading && "hidden")}>
           {step > 1 && (
             <Button
               variant={"outline"}
               size={"lg"}
               className="flex items-center gap-2  hover:transition-all mb-6 group px-4 py-2 rounded-xl hover:bg-white/5"
               onClick={prevStep}
+              disabled={step === 2 && deckId ? true : false}
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform duration-300" />
               <span className="font-medium">Voltar</span>
@@ -512,8 +520,14 @@ export const FlashcardForm = ({
               className="flex items-center gap-2  hover:transition-all mb-6 group px-4 py-2 rounded-xl hover:bg-white/5"
               onClick={nextStep}
             >
-              <Sparkles className="w-5 h-5 transition-transform duration-300 animate-pulse" />
-              <span className="font-medium">Criar card</span>
+              {isLoading ? (
+                <Sparkles className="w-5 h-5 transition-transform duration-300 animate-pulse" />
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 transition-transform duration-300 animate-pulse" />
+                  <span className="font-medium">Criar card</span>
+                </>
+              )}
             </Button>
           )}
         </div>

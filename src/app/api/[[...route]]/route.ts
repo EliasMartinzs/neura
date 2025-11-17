@@ -32,12 +32,14 @@ import deck from "./deck";
 import flashcard from "./flashcard";
 import profile from "./profile";
 import session from "./session";
+import study from "./study";
 
 const route = app
   .route("/session", session)
   .route("/profile", profile)
   .route("/deck", deck)
-  .route("/flashcard", flashcard);
+  .route("/flashcard", flashcard)
+  .route("/study", study);
 
 export const GET = handle(app);
 export const POST = handle(app);

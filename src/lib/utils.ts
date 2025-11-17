@@ -1,3 +1,4 @@
+import { StudiedCategory } from "@/utils/type";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -40,4 +41,37 @@ export function getCloudinaryPublicId(imageUrl: string) {
   } catch {
     return null;
   }
+}
+
+export function getGradeFromState({
+  easeFactor,
+  interval,
+  repetition,
+}: {
+  easeFactor: number;
+  interval: number;
+  repetition: number;
+}): number {
+  if (repetition === 0 || interval <= 1) return 1;
+
+  if (easeFactor <= 1.5) return 2;
+
+  if (easeFactor <= 2.2) return 3;
+
+  if (easeFactor <= 2.6) return 4;
+
+  return 5;
+}
+
+export function normalizeTags(data: StudiedCategory[]): StudiedCategory[] {
+  return data.map((item) => {
+    if (typeof item === "string") {
+      return { tag: item, count: 1 };
+    }
+
+    return {
+      tag: item.tag,
+      count: item.count ?? 1,
+    };
+  });
 }

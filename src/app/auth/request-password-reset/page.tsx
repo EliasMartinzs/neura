@@ -51,13 +51,10 @@ export default function RequestPasswordReset() {
           toast.success("E-Mail enviado com sucesso!");
           form.reset();
         },
-        onError(context) {
-          console.log(context);
-        },
+        onError(context) {},
       }
     );
 
-    console.log(data);
     if (error?.message) {
       toast.error(error.message);
     }

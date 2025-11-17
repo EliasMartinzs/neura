@@ -1,5 +1,6 @@
 import { ResponseFlashcard } from "@/features/flashcard/api/use-get-flashcard";
 import { BloomLevel, FlashcardDifficulty } from "@prisma/client";
+import { AlertCircle, Book, Star, ThumbsUp } from "lucide-react";
 
 type DifficultyInfo = {
   bg: string;
@@ -95,7 +96,21 @@ export const useHelperFlashcard = (flashcard: Flashcard) => {
     if (!input) return { text: "Nunca revisado", relative: "" };
 
     const date = new Date(input);
-    const diffDays = Math.floor((date.getTime() - Date.now()) / 86400000);
+    const today = new Date();
+
+    // Zerar horas/minutos/segundos para comparação de dias
+    const utcDate = Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    const utcToday = Date.UTC(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    const diffDays = Math.floor((utcDate - utcToday) / 86400000);
 
     const relative =
       diffDays === 0
@@ -120,12 +135,16 @@ export const useHelperFlashcard = (flashcard: Flashcard) => {
 
   const getEaseFactorInfo = (factor: number) => {
     if (factor >= 2.5)
-      return { label: "Excelente", color: "text-emerald-600", icon: "🌟" };
+      return { label: "Excelente", color: "text-emerald-600", icon: Star };
     if (factor >= 2.0)
-      return { label: "Bom", color: "text-blue-600", icon: "👍" };
+      return { label: "Bom", color: "text-blue-600", icon: ThumbsUp };
     if (factor >= 1.5)
-      return { label: "Regular", color: "text-amber-600", icon: "📚" };
-    return { label: "Precisa Revisar", color: "text-rose-600", icon: "⚠️" };
+      return { label: "Regular", color: "text-amber-600", icon: Book };
+    return {
+      label: "Precisa Revisar",
+      color: "text-rose-600",
+      icon: AlertCircle,
+    };
   };
 
   const getPerformanceInfo = (avg: number) => {

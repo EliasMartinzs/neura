@@ -28,6 +28,8 @@ export const useDeleteFlashcard = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
         queryClient.invalidateQueries({ queryKey: ["trash-flashcards"] }),
+        queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
+        queryClient.invalidateQueries({ queryKey: ["summary"] }),
       ]);
     },
     onError: ({ message }) => {

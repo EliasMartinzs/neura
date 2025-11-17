@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair } from "next/font/google";
+import { Playfair, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import QueryProvider from "@/providers/query-client-provider";
@@ -9,6 +9,12 @@ const playFair = Playfair({
   variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["300", "400", "600", "800", "900"],
+});
+
+const roboto = Roboto_Mono({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["100", "200"],
 });
 
 export const metadata: Metadata = {
@@ -23,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${playFair.className} antialiased`}>
+      <body className={`${playFair.className} ${roboto.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

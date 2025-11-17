@@ -1,5 +1,3 @@
-"use client";
-
 import { Separator } from "@/components/shared/separator";
 import { User } from "@prisma/client";
 
@@ -8,7 +6,7 @@ import {
   editProfileSchema,
 } from "@/schemas/edit-profile.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, PencilLine, PencilOff } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm, UseFormReturn } from "react-hook-form";
 
 import {
@@ -20,16 +18,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useEditProfile } from "@/features/profile/api/use-edit-profile";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-export const CardDetails = ({ user }: { user: User }) => {
-  const [isEditing, setIsEditing] = useState(false);
-
+export const EditProfile = ({
+  isEditing,
+  setIsEditing,
+  user,
+}: {
+  user: User;
+  isEditing: boolean;
+  setIsEditing: (prevState: boolean) => void;
+}) => {
   const form = useForm<EditProfileForm>({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
@@ -63,48 +67,27 @@ export const CardDetails = ({ user }: { user: User }) => {
   }
 
   return (
-    <div className="rounded-3xl border p-6 shadow space-y-4 bg-card h-fit">
-      <div className="w-full flex items-center justify-between">
-        <h4 className="text-2xl">Bio e Outros detalhes</h4>
-
-        <Button
-          variant={"ghost"}
-          type="button"
-          onClick={() => {
-            form.reset();
-            setIsEditing((prev) => !prev);
+    <AnimatePresence mode="wait">
+      {isEditing && (
+        <motion.div
+          key="edit"
+          className="my-10 bg-card bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-4xl p-8 border border-slate-700/50 shadow-xl"
+          initial={{ opacity: 0, height: 0, scale: 0.95 }}
+          animate={{ opacity: 1, height: "auto", scale: 1 }}
+          exit={{ opacity: 0, height: 0, scale: 0.95 }}
+          transition={{
+            duration: 0.5,
+            ease: [0.25, 0.1, 0.25, 1],
           }}
         >
-          {isEditing ? (
-            <PencilOff strokeWidth={0.8} className="size-6 cursor-pointer" />
-          ) : (
-            <PencilLine strokeWidth={0.8} className="size-6 cursor-pointer" />
-          )}
-        </Button>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {isEditing ? (
-          <motion.div
-            key="edit"
-            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-            animate={{ opacity: 1, height: "auto", scale: 1 }}
-            transition={{
-              duration: 0.5,
-              ease: [0.25, 0.1, 0.25, 1],
-            }}
-          >
-            <FormEdit
-              form={form}
-              handleEditProfile={handleEditProfile}
-              isPending={isPending}
-            />
-          </motion.div>
-        ) : (
-          <Details user={user} />
-        )}
-      </AnimatePresence>
-    </div>
+          <FormEdit
+            form={form}
+            handleEditProfile={handleEditProfile}
+            isPending={isPending}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -257,48 +240,5 @@ const FormEdit = ({
         </motion.div>
       </div>
     </Form>
-  );
-};
-
-const Details = ({ user }: { user: User }) => {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20">
-      <div className="text-lg leading-6 capitalize self-start">
-        <p className="text-muted-foreground">Meu nome</p>
-        <p>{user?.name ?? "Nenhum"}</p>
-
-        <Separator />
-      </div>
-
-      <div className="text-lg leading-6 capitalize self-start">
-        <p className="text-muted-foreground">Apelido</p>
-        <p>{user?.surname ?? "Nenhum"}</p>
-
-        <Separator />
-      </div>
-
-      <div className="text-lg leading-6 self-start">
-        <p className="text-muted-foreground">Cor favorita</p>
-        <p>{user?.favColor ?? "Nenhuma"}</p>
-
-        <Separator />
-      </div>
-
-      <div className="text-lg leading-6 self-start">
-        <p className="text-muted-foreground">E-Mail</p>
-        <p>{user?.email ?? "Nenhum"}</p>
-
-        <Separator />
-      </div>
-
-      <div className="text-lg leading-6 capitalize self-start">
-        <p className="text-muted-foreground">Minha biografia</p>
-        <p className="leading-5 line-clamp-1 hover:line-clamp-none transition-all duration-300 ease-in-out">
-          {user?.bio}
-        </p>
-
-        <Separator />
-      </div>
-    </div>
   );
 };
