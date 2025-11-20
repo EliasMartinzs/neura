@@ -8,7 +8,7 @@ import {
   TrendingUp,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useMemo } from "react";
 
 type Props = {
   userStats: {
@@ -20,95 +20,86 @@ type Props = {
   };
 };
 
-export function UserStatsWidget({ userStats }: Props) {
-  const [animated, setAnimated] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimated(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const stats = [
-    {
-      icon: Layers,
-      value: userStats?.decksCount || 0,
-      label: "Decks",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-500/10",
-      borderColor: "border-blue-500/30",
-      iconBg: "bg-blue-500/20",
-      textColor: "text-blue-400",
-      link: "/dashboard/deck",
-    },
-    {
-      icon: SquarePen,
-      value: userStats?.flashcardsCreated || 0,
-      label: "Flashcards",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-500/10",
-      borderColor: "border-purple-500/30",
-      iconBg: "bg-purple-500/20",
-      textColor: "text-purple-400",
-      link: "/dashboard/flashcards",
-    },
-    {
-      icon: CheckCircle,
-      value: userStats?.studiesCompleted || 0,
-      label: "Completos",
-      color: "from-emerald-500 to-teal-500",
-      bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/30",
-      iconBg: "bg-emerald-500/20",
-      textColor: "text-emerald-400",
-      link: null,
-    },
-    {
-      icon: RefreshCcw,
-      value: userStats?.totalReviews || 0,
-      label: "Revisões",
-      color: "from-orange-500 to-amber-500",
-      bgColor: "bg-orange-500/10",
-      borderColor: "border-orange-500/30",
-      iconBg: "bg-orange-500/20",
-      textColor: "text-orange-400",
-      link: null,
-    },
-
-    {
-      icon: Timer,
-      value: userStats.lastStudyAt
-        ? new Intl.DateTimeFormat("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          }).format(new Date(userStats?.lastStudyAt))
-        : "Nenhum registro até o momento",
-      label: "Último estudo",
-      color: "from-rose-500 to-rose-500",
-      bgColor: "bg-rose-500/10",
-      borderColor: "border-rose-500/30",
-      iconBg: "bg-rose-500/20",
-      textColor: "text-rose-400",
-      link: null,
-    },
-  ];
+function StatsWidgetComponent({ userStats }: Props) {
+  const stats = useMemo(
+    () => [
+      {
+        icon: Layers,
+        value: userStats?.decksCount || 0,
+        label: "Decks",
+        color: "from-blue-500 to-cyan-500",
+        bgColor: "bg-blue-500/10",
+        borderColor: "border-blue-500/30",
+        iconBg: "bg-blue-500/20",
+        textColor: "text-blue-400",
+        link: "/dashboard/deck",
+      },
+      {
+        icon: SquarePen,
+        value: userStats?.flashcardsCreated || 0,
+        label: "Flashcards",
+        color: "from-purple-500 to-pink-500",
+        bgColor: "bg-purple-500/10",
+        borderColor: "border-purple-500/30",
+        iconBg: "bg-purple-500/20",
+        textColor: "text-purple-400",
+        link: "/dashboard/flashcards",
+      },
+      {
+        icon: CheckCircle,
+        value: userStats?.studiesCompleted || 0,
+        label: "Completos",
+        color: "from-emerald-500 to-teal-500",
+        bgColor: "bg-emerald-500/10",
+        borderColor: "border-emerald-500/30",
+        iconBg: "bg-emerald-500/20",
+        textColor: "text-emerald-400",
+        link: null,
+      },
+      {
+        icon: RefreshCcw,
+        value: userStats?.totalReviews || 0,
+        label: "Revisões",
+        color: "from-orange-500 to-amber-500",
+        bgColor: "bg-orange-500/10",
+        borderColor: "border-orange-500/30",
+        iconBg: "bg-orange-500/20",
+        textColor: "text-orange-400",
+        link: null,
+      },
+      {
+        icon: Timer,
+        value: userStats.lastStudyAt
+          ? new Intl.DateTimeFormat("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            }).format(new Date(userStats?.lastStudyAt))
+          : "Nenhum registro até o momento",
+        label: "Último estudo",
+        color: "from-rose-500 to-rose-500",
+        bgColor: "bg-rose-500/10",
+        borderColor: "border-rose-500/30",
+        iconBg: "bg-rose-500/20",
+        textColor: "text-rose-400",
+        link: null,
+      },
+    ],
+    [userStats]
+  );
 
   return (
     <div className="w-full">
       <div className="lg:grid lg:grid-cols-3 xl:grid-cols-5 gap-2 lg:gap-4">
         <div className="flex flex-wrap justify-center items-center gap-2 lg:gap-4 lg:contents">
-          {stats.map((stat, index) => {
+          {stats.map((stat) => {
             const Icon = stat.icon;
-            const animatedValue = animated ? stat.value : 0;
 
             return (
               <div
                 key={stat.label}
                 className="group relative overflow-hidden max-lg:flex-1 max-lg:basis-[45%]"
-                style={{
-                  animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`,
-                }}
               >
                 {/* Card */}
                 <div
@@ -156,16 +147,16 @@ export function UserStatsWidget({ userStats }: Props) {
                     <div className="space-y-1">
                       <div
                         className={cn(
-                          " text-white transition-all duration-700",
-                          typeof animatedValue === "string"
-                            ? "text-xl"
-                            : "text-5xl font-extrabold"
+                          " text-white transition-all duration-700 mb-2",
+                          stat.value === "Nenhum registro até o momento"
+                            ? "text-lg"
+                            : "text-5xl"
                         )}
                         style={{
                           filter: "drop-shadow(0 0 10px rgba(255,255,255,0.2))",
                         }}
                       >
-                        {animatedValue}
+                        {stat.value}
                       </div>
 
                       {/* Linha decorativa */}
@@ -202,19 +193,9 @@ export function UserStatsWidget({ userStats }: Props) {
           })}
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }
+
+export const StatsWidget = memo(StatsWidgetComponent);
+StatsWidget.displayName = "StatsWidget";

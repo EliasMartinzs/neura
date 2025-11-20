@@ -192,10 +192,12 @@ model Flashcard {
   lastReviewedAt DateTime?
   performanceAvg Float?    @default(0.0)
 
-  reviews   FlashcardReview[]
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  deletedAt DateTime?
+  reviews           FlashcardReview[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
+  sessionId         String?
+  sessionFlashcards SessionFlashcard[]
 
   @@map("flashcard")
 }
@@ -233,9 +235,10 @@ model StudySession {
   correctCount Int       @default(0)
   wrongCount   Int       @default(0)
 
-  flashcardReviews FlashcardReview[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  flashcardReviews  FlashcardReview[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  sessionFlashcards SessionFlashcard[]
 }
 
 model FlashcardReview {
@@ -276,6 +279,20 @@ model ActivityLog {
 
   @@index([userId])
   @@map("activity_log")
+}
+
+model SessionFlashcard {
+  id          String   @id @default(cuid())
+  sessionId   String
+  flashcardId String
+  createdAt   DateTime @default(now())
+
+  session   StudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  flashcard Flashcard    @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, flashcardId])
+  @@index([sessionId])
+  @@index([flashcardId])
 }
 
 model Reminder {

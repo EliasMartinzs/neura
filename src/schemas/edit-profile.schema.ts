@@ -7,12 +7,7 @@ export const editProfileSchema = z.object({
       error: "Nome deve ter no minimo 4 caracteres",
     })
     .optional(),
-  surname: z
-    .string()
-    .min(2, {
-      error: "Apelido deve ter no minimo 2 caracteres",
-    })
-    .optional(),
+  surname: z.string().optional(),
   bio: z.string().optional(),
   favColor: z.string().optional(),
   image: z.string().optional(),

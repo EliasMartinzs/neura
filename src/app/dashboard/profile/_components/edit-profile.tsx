@@ -110,7 +110,7 @@ const FormEdit = ({
     <Form {...form}>
       <div className="space-y-10">
         <div className="space-y-2 text-center">
-          <div className="text-lg text-center space-y-2 text-muted-foreground font-extralight">
+          <div className="text-lg text-center space-y-2  font-extralight">
             <h5>Você está no modo de edição.</h5>
             Faça as alterações desejadas e salve quando terminar.
           </div>
@@ -138,15 +138,11 @@ const FormEdit = ({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-lg">
+                    <FormLabel className="text-white text-lg">
                       Meu Nome
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        className="border-dashed"
-                        disabled={isLoading}
-                      />
+                      <Input {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -158,15 +154,11 @@ const FormEdit = ({
                 name="surname"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-lg">
+                    <FormLabel className="text-white text-lg">
                       Apelido
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        className="border-dashed"
-                        disabled={isLoading}
-                      />
+                      <Input {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -178,15 +170,11 @@ const FormEdit = ({
                 name="favColor"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-lg">
+                    <FormLabel className="text-white text-lg">
                       Cor Favorita
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        className="border-dashed"
-                        disabled={isLoading}
-                      />
+                      <Input {...field} disabled={isLoading} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -198,14 +186,13 @@ const FormEdit = ({
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-muted-foreground text-lg">
+                    <FormLabel className="text-white text-lg">
                       Minha Biografia
                     </FormLabel>
                     <FormControl>
                       <Textarea
                         value={field.value}
                         onChange={(e) => field.onChange(e)}
-                        className="border-dashed"
                         disabled={isLoading}
                       />
                     </FormControl>

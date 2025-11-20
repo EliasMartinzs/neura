@@ -53,11 +53,7 @@ export const CreateDeckButton = () => {
           </p>
         </div>
 
-        <DeckForm
-          close={setOpen}
-          openModalDeck={openModalDeck}
-          router={router}
-        />
+        <DeckForm close={setOpen} />
       </div>
     </ResponsiveDialog>
   );

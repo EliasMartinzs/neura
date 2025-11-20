@@ -8,6 +8,8 @@ import { MenuMobile } from "./menu-mobile";
 import { linksHeader } from "@/constants/links-header";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { SignOutButton } from "@/components/shared/sign-out-button";
+import { ModeToggle } from "@/components/shared/mode-toggle";
 
 export const Header = () => {
   const [open, setOpen] = useState(false);
@@ -34,7 +36,7 @@ export const Header = () => {
               const Icon = icon;
               return (
                 <Link
-                  href={href ? href : "/dashboard/about"}
+                  href={href}
                   key={id}
                   className={cn(
                     "text-muted-foreground hover:text-foreground transition-colors duration-200 ease-in flex items-center gap-x-3",
@@ -45,6 +47,10 @@ export const Header = () => {
                 </Link>
               );
             })}
+
+            <SignOutButton />
+
+            <ModeToggle />
           </div>
         </div>
       </nav>

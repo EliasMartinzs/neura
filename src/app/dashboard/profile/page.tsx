@@ -1,7 +1,5 @@
 "use client";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 import {
@@ -16,10 +14,6 @@ import {
   Eye,
   EyeClosed,
   Flame,
-  Loader2,
-  LoaderCircle,
-  Sparkles,
-  Star,
   Target,
   Trash2,
   TrendingUp,
@@ -35,8 +29,9 @@ import { EditProfile } from "./_components/edit-profile";
 
 import { ACTIVITY_ICONS, ActivityIconType } from "@/constants/activity";
 import useProfile from "@/features/profile/api/use-profile";
-import Link from "next/link";
-import { useDashboard } from "@/features/session/api/use-dashboard";
+import { EmptyState } from "@/lib/query/empty-state";
+import { ErrorState } from "@/lib/query/error-state";
+import { LoadingState } from "@/lib/query/loading-state";
 
 type MostStudiedCategory = {
   tag: string;
@@ -46,74 +41,32 @@ type MostStudiedCategory = {
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showTags, setShowTags] = useState(5);
-  const { user, isError, isLoading, isRefetching, refetch, stats, activities } =
-    useProfile();
+  const { user, isError, isLoading, refetch, stats, activities } = useProfile();
 
   if (isLoading) {
-    return (
-      <div className="absolute top-0 left-0 -z-50 h-svh overflow-hidden flex items-center justify-center w-full">
-        <Loader2 className="size-7 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (isError) {
-    return (
-      <div className="absolute top-0 left-0 -z-50 h-svh overflow-hidden flex items-center flex-col justify-center w-full gap-4">
-        <Image
-          src={`/server-error-dark.svg`}
-          alt="server error image"
-          width={160}
-          height={160}
-          className="object-cover size-40"
-        />
-
-        <div className="flex flex-col items-center justify-center gap-y-2">
-          <h4 className="text-lg">Houve um erro, tente novamente!</h4>
-          <Button type="button" onClick={() => refetch()}>
-            Recarregar{" "}
-            <LoaderCircle className={cn(isRefetching && "animate-spin")} />
-          </Button>
-        </div>
-      </div>
-    );
+    return <ErrorState onRetry={refetch} />;
   }
 
   if (!user) {
-    return (
-      <div className="absolute top-0 left-0 -z-50 h-svh overflow-hidden flex items-center flex-col justify-center w-full gap-4">
-        <Image
-          src={`/undraw_no-data.svg`}
-          alt="server error image"
-          width={160}
-          height={160}
-          className="object-cover size-40"
-        />
-
-        <div className="flex flex-col items-center justify-center gap-y-2">
-          <h4 className="text-lg">
-            Não encontramos nenhum registro para seu perfil.
-          </h4>
-          <Link
-            className={buttonVariants({ variant: "gradient" })}
-            href={"/dashboard"}
-          >
-            Voltar para dashboard
-          </Link>
-        </div>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   const getInitials = () => {
-    return `${user.name?.[0] || ""}${user.surname?.[0] || ""}`.toUpperCase();
+    return user.name
+      .split(" ")
+      .map((n) => n.at(0))
+      .splice(0, 2);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-white">
       {/* Hero Section with Cover */}
       <div className="relative w-full flex items-center justify-center">
-        {user?.image ? (
+        {user.image ? (
           <Image
             src={user.image}
             alt={user.name}
@@ -122,7 +75,9 @@ export default function ProfilePage() {
             className="object-cover rounded-full size-40"
           />
         ) : (
-          getInitials()
+          <div className="size-40 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 rounded-full text-3xl flex items-center justify-center">
+            {getInitials()}
+          </div>
         )}
       </div>
 
@@ -130,16 +85,16 @@ export default function ProfilePage() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 space-y-6">
         {/* User Info Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 text-foreground">
             {user?.name} {user?.surname}
           </h1>
-          <p className="text-gray-400 text-lg mb-4">{user?.email}</p>
+          <p className="text-muted-foreground text-lg mb-4">{user?.email}</p>
           {user?.bio && (
-            <p className="text-gray-300 italic max-w-2xl mx-auto mb-6">
+            <p className="text-muted-foreground italic max-w-2xl mx-auto mb-6">
               {user?.bio}
             </p>
           )}
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-400">
+          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               {/* <span>Membro há {getDaysActive()} dias</span> */}
@@ -156,7 +111,7 @@ export default function ProfilePage() {
           <div className="gap-x-4 flex items-center justify-center">
             <button
               onClick={() => setIsEditing((prevState) => !prevState)}
-              className="mt-6 px-8 py-3 bg-linear-to-r from-purple-500 to-pink-500 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 inline-flex items-center gap-2"
+              className="text-white mt-6 px-8 py-3 bg-linear-to-r from-purple-500 to-pink-500 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 inline-flex items-center gap-2"
             >
               <Edit2 className="w-4 h-4" />
               Editar Perfil
@@ -220,7 +175,7 @@ export default function ProfilePage() {
               {/* Accuracy Bar */}
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-muted-foreground font-medium">
                     Taxa de Acurácia
                   </span>
                   <span className="text-3xl font-bold bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
@@ -323,7 +278,7 @@ export default function ProfilePage() {
                             <p className="font-semibold text-lg">
                               {category?.tag}
                             </p>
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-muted-foreground">
                               Categoria mais estudada
                             </p>
                           </div>
@@ -399,7 +354,7 @@ export default function ProfilePage() {
               <h3 className="text-2xl font-bold text-red-400 mb-2">
                 Zona de Perigo
               </h3>
-              <p className="text-gray-300 mb-4">
+              <p className="text-muted-foreground mb-4">
                 Esta ação é permanente e não pode ser desfeita. Todos os seus
                 dados serão perdidos.
               </p>
@@ -425,7 +380,7 @@ function HeroStat({ icon, value, label, color }: any) {
           {icon}
         </div>
         <p className="text-3xl md:text-4xl font-bold mb-1">{value}</p>
-        <p className="text-sm text-gray-400">{label}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
       </div>
     </div>
   );
@@ -438,7 +393,7 @@ function StatBox({ icon, label, value, bgColor, borderColor }: any) {
     >
       <div className="flex items-center gap-3 mb-2">
         {icon}
-        <span className="text-sm text-gray-400">{label}</span>
+        <span className="text-sm text-muted-foreground">{label}</span>
       </div>
       <p className="text-3xl font-bold">{value}</p>
     </div>
@@ -464,7 +419,7 @@ function ActivityItem({
       </div>
       <div className="flex-1">
         <p className="font-semibold">{message}</p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           {new Intl.DateTimeFormat("pt-BR", {
             day: "2-digit",
             month: "2-digit",
@@ -492,7 +447,7 @@ function Achievement({ emoji, title, description, gradient }: any) {
         </div>
         <div className="flex-1">
           <p className="font-semibold text-lg">{title}</p>
-          <p className="text-sm text-gray-400">{description}</p>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       </div>
     </div>

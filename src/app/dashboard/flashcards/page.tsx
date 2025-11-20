@@ -5,84 +5,38 @@ import { Title } from "@/components/shared/title";
 import { Button } from "@/components/ui/button";
 import { useGetFlashcards } from "@/features/flashcard/api/use-get-flashcards";
 import { useFlashcardFiltersStore } from "@/features/flashcard/hooks/use-flashcard-filters-store";
-import { Loader2, Plus } from "lucide-react";
-import Image from "next/image";
-import ErrorImage from "../../../../public/undraw_connection-lost.svg";
-import NoDataImage from "../../../../public/undraw_no-data.svg";
+import { EmptyState } from "@/lib/query/empty-state";
+import { ErrorState } from "@/lib/query/error-state";
+import { LoadingState } from "@/lib/query/loading-state";
+import { QueryState } from "@/lib/query/query-state";
+import { Plus } from "lucide-react";
 import { CreateFlashcardButton } from "./_components/create-flashcard-button";
 import { Flashcards } from "./_components/flashcards";
 import { FlashcardsFilters } from "./_components/flashcards-filters";
+import { Suspense } from "react";
+import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 
 export default function FlashcardPage() {
   const { deck, page, perPage, setPage } = useFlashcardFiltersStore();
-  const { data, isLoading, isError, refetch } = useGetFlashcards({
+  const query = useGetFlashcards({
     deck: deck,
     page: page,
     perPage: perPage,
   });
 
-  if (isLoading) {
-    return (
-      <div className="w-full min-h-[65svh] overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
-        <h4 className="text-xl xl:text-2xl">
-          <Loader2 className="animate-spin size-7 text-muted-foreground" />
-        </h4>
-      </div>
-    );
-  }
-
-  if (isError || !data) {
-    <div className="w-full min-h-[65svh] overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
-      <Image
-        src={ErrorImage}
-        alt="error"
-        className="object-center object-contain size-40 lg:h-72"
-      />
-
-      <h4 className="text-xl xl:text-2xl">
-        Houve um erro,{" "}
-        <Button onClick={() => refetch()}>Tente novamente</Button>
-      </h4>
-    </div>;
-  }
-
-  if (!data?.data?.length) {
-    return (
-      <div className="max-md:space-y-20 max-md:max-w-xs max-sm:h-[70svh] mx-auto">
-        <div className="md:fixed w-full h-full flex items-center justify-center flex-col gap-y-6 inset-0 -z-10">
-          <Image
-            src={NoDataImage}
-            alt="deck"
-            className="object-center object-contain size-40 lg:h-72"
-          />
-
-          <h4 className="text-xl xl:text-2xl text-center">
-            Nenhum falshcard criado até o momente, crie um já
-          </h4>
-
-          <CreateFlashcardButton
-            trigger={
-              <Button variant="outline" className="">
-                Novo card <Plus className="w-5 h-5 " />
-              </Button>
-            }
-          />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <main className="space-y-6">
       <Title
         action={
-          <CreateFlashcardButton
-            trigger={
-              <Button variant="outline" className="">
-                Novo card <Plus className="w-5 h-5 " />
-              </Button>
-            }
-          />
+          <Suspense>
+            <CreateFlashcardButton
+              trigger={
+                <Button variant="outline" className="">
+                  Novo card <Plus className="w-5 h-5 " />
+                </Button>
+              }
+            />
+          </Suspense>
         }
       >
         Flashcards
@@ -90,13 +44,25 @@ export default function FlashcardPage() {
 
       <FlashcardsFilters />
 
-      <Flashcards flashcards={data.data} />
+      <QueryState
+        query={query}
+        loading={<LoadingState />}
+        error={({ refetch }) => <ErrorState onRetry={refetch} />}
+        fetchingIndicator={<FetchingIndicatorState />}
+        empty={<EmptyState />}
+      >
+        {(data) => (
+          <>
+            <Flashcards flashcards={data.data} />
 
-      <PaginationComponent
-        page={page}
-        totalPages={data.totalPages}
-        setPage={setPage}
-      />
+            <PaginationComponent
+              page={page}
+              totalPages={"totalPages" in data ? data.totalPages : 0}
+              setPage={setPage}
+            />
+          </>
+        )}
+      </QueryState>
     </main>
   );
 }

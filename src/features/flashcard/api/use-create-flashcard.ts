@@ -24,6 +24,7 @@ export const useCreateFlashcard = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
         queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
     onError: ({ message }) => {

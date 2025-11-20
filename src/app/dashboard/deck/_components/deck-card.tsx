@@ -50,7 +50,6 @@ export const DeckCard = ({ deck }: Props) => {
         deck={deck}
         displayedTags={displayedTags}
         hasMoreTags={hasMoreTags}
-        router={router}
         setShowAllTags={setShowAllTags}
         showAllTags={showAllTags}
       />
@@ -60,14 +59,12 @@ export const DeckCard = ({ deck }: Props) => {
 
 const Card = ({
   deck,
-  router,
   displayedTags,
   hasMoreTags,
   showAllTags,
   setShowAllTags,
 }: {
   deck: Deck;
-  router: AppRouterInstance;
   hasMoreTags: boolean;
   displayedTags: string[];
   showAllTags: boolean;

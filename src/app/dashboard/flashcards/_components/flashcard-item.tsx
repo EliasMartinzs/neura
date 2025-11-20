@@ -27,7 +27,7 @@ export const FlashcardItem = ({ flashcard }: Props) => {
   const router = useRouter();
 
   return (
-    <div className="relative group w-auto">
+    <div className="relative group w-auto h-full">
       {/* Decorative and Animations */}
       <DecorativesAndAnimations color={flashcard.color} />
 
@@ -89,7 +89,7 @@ const Card = ({
   } = flashcard;
   return (
     <div
-      className="relative rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+      className="relative rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full"
       style={{
         background:
           color || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",

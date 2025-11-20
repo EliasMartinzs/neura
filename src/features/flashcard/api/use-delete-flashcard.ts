@@ -30,6 +30,8 @@ export const useDeleteFlashcard = () => {
         queryClient.invalidateQueries({ queryKey: ["trash-flashcards"] }),
         queryClient.invalidateQueries({ queryKey: ["deck-by-id"] }),
         queryClient.invalidateQueries({ queryKey: ["summary"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["reviews"] }),
       ]);
     },
     onError: ({ message }) => {

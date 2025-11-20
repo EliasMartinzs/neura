@@ -22,6 +22,7 @@ export const useCreateReview = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
         queryClient.invalidateQueries({ queryKey: ["summary"] }),
+        queryClient.invalidateQueries({ queryKey: ["reviews"] }),
       ]);
     },
     onError: ({ message }) => {

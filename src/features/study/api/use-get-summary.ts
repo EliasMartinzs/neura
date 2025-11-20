@@ -1,13 +1,10 @@
 import client from "@/lib/hc";
 import { useQuery } from "@tanstack/react-query";
-import { InferRequestType, InferResponseType } from "hono";
+import { InferResponseType } from "hono";
 
 type Response = InferResponseType<
   (typeof client.api.study.summary)[":id"]["$get"]
 >;
-type Request = InferRequestType<
-  (typeof client.api.study.summary)[":id"]["$get"]
->["param"];
 
 export const useGetSummary = (id: string) => {
   const query = useQuery<Response, Error>({
@@ -23,13 +20,5 @@ export const useGetSummary = (id: string) => {
     },
   });
 
-  const { data, isLoading, isRefetching, isError, refetch } = query;
-
-  return {
-    data: data?.data,
-    isLoading,
-    isRefetching,
-    isError,
-    refetch,
-  };
+  return query;
 };

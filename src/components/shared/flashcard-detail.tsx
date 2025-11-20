@@ -8,7 +8,6 @@ import { Award, BookOpen, Info, RotateCw, Target } from "lucide-react";
 
 import { useHelperFlashcard } from "@/hooks/use-helper-flashcard";
 import { motion } from "framer-motion";
-import { useState } from "react";
 
 type Flashcard = NonNullable<ResponseFlashcard>["data"];
 

@@ -27,9 +27,5 @@ export const useGetDeckNames = ({ hasFlashcard }: Props) => {
     },
   });
 
-  const { data, isLoading } = query;
-  return {
-    decks: data?.data,
-    isLoading,
-  };
+  return query;
 };

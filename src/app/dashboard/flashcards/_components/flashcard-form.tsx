@@ -17,6 +17,7 @@ import {
   Lightbulb,
   Loader2,
   Palette,
+  Plus,
   Sparkles,
   Tag,
   Zap,
@@ -110,8 +111,8 @@ export const FlashcardForm = ({
                 </FormLabel>
                 <FormControl>
                   {decks?.length === 0 ? (
-                    <div className="space-y-2 flex items-center justify-center flex-col">
-                      <p>
+                    <div className="space-y-4 flex items-center justify-center flex-col my-4">
+                      <p className="text-muted-foreground">
                         Nenhum deck foi criado ainda. Crie um deck para poder
                         adicionar seus flashcards.
                       </p>
@@ -123,16 +124,17 @@ export const FlashcardForm = ({
                             "Redirecionando para a criação do deck..."
                           );
                         }}
+                        variant={"outline"}
                       >
-                        Crie um deck clicando aqui
+                        <Plus /> Crie um deck clicando aqui
                       </Button>
                     </div>
                   ) : isLoadingDeckNames ? (
                     <Loader2 className="animate-spin" />
                   ) : !decks ? (
-                    <>Houve um erro, tente novamente</>
+                    <div>Houve um erro, tente novamente</div>
                   ) : (
-                    <div className="space-y-4 max-h-[70svh]">
+                    <div className="space-y-4 max-h-[70svh] mt-6">
                       <div
                         className={cn("grid grid-cols-1 md:grid-cols-2 gap-4")}
                       >
@@ -155,11 +157,13 @@ export const FlashcardForm = ({
                             }}
                           >
                             <CardHeader>
-                              <CardTitle>{deck.name}</CardTitle>
+                              <CardTitle className="capitalize">
+                                {deck.name}
+                              </CardTitle>
                             </CardHeader>
                             <CardContent>
                               <div className="flex items-center gap-x-3">
-                                <Book className="size-5 text-primary" />{" "}
+                                <Book className="size-5" />{" "}
                                 {Number(deck._count.flashcards)} cards
                               </div>
                             </CardContent>

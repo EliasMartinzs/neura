@@ -2,12 +2,15 @@ import prisma from "@/lib/db";
 import { updateUserStats } from "@/lib/update-user-stats";
 import { updateUserAccuracyRate } from "@/lib/user-stats";
 import { authMiddleware } from "@/middlewares/auth-middleware";
+import { readSecutiryMiddleware } from "@/middlewares/read";
 import { reviewFlashcardSchema } from "@/schemas/review-flashcard";
 import { handlePrismaError } from "@/utils/handle-prisma-error";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import z, { promise } from "zod";
+import z from "zod";
 import { AppVariables } from "./route";
+import { getBrasiliaDayRange } from "@/lib/helpers/get-brasilia-day-range";
+import { createActivity } from "@/lib/helpers/create-activity";
 
 const app = new Hono<{
   Variables: AppVariables;
@@ -26,62 +29,107 @@ const app = new Hono<{
         const user = c.get("user");
         const { deckId } = c.req.valid("json");
 
-        const lastSession = await prisma.studySession.findFirst({
+        // 1. Procurar sessão ativa NÃO FINALIZADA
+        const activeSession = await prisma.studySession.findFirst({
           where: {
-            deckId,
             userId: user?.id!,
+            deckId,
+            completed: false,
           },
-          orderBy: {
-            createdAt: "desc",
+          include: {
+            flashcardReviews: true,
           },
+          orderBy: { createdAt: "desc" },
         });
 
-        if (lastSession && lastSession.completed) {
-          return c.json(
-            {
-              code: 400,
-              message: "Essa seção de estudo já foi finalizada.",
-              data: {
-                sessionId: lastSession.id,
-                deckId: lastSession.deckId,
-                status: "completed",
-              },
-            },
-            400
-          );
-        }
-
-        if (lastSession && !lastSession.completed) {
+        // 2. Se existe sessão ativa -> continuar nela
+        if (activeSession) {
           return c.json(
             {
               code: 200,
-              message: "Você já possui uma seção ativa. Continuando...",
+              message: "Sessão retomada.",
               data: {
-                sessionId: lastSession.id,
-                deckId: lastSession.deckId,
-                status: "active",
+                sessionId: activeSession.id,
+                deckId,
               },
             },
             200
           );
         }
 
-        const session = await prisma.studySession.create({
-          data: {
-            userId: user?.id!,
+        // 3. Buscar todos os flashcards do deck
+        const allFlashcards = await prisma.flashcard.findMany({
+          where: {
             deckId,
-            completed: false,
+            deletedAt: null,
           },
+          orderBy: { createdAt: "asc" },
+        });
+
+        // 4. Verificar quais já foram revisados em sessões anteriores
+        const reviewedIds = await prisma.flashcardReview
+          .findMany({
+            where: {
+              flashcardId: { in: allFlashcards.map((fc) => fc.id) },
+            },
+            select: { flashcardId: true },
+          })
+          .then((res) => res.map((r) => r.flashcardId));
+
+        const pendingFlashcards = allFlashcards.filter(
+          (fc) => !reviewedIds.includes(fc.id)
+        );
+
+        // 5. Se não há flashcards pendentes -> sessão completa
+        if (pendingFlashcards.length === 0) {
+          return c.json(
+            {
+              code: 200,
+              message: "Todos os flashcards deste deck já foram revisados.",
+              data: null,
+            },
+            200
+          );
+        }
+
+        // 6. Criar nova sessão apenas para os flashcards pendentes
+        const newSession = await prisma.$transaction(async (tx) => {
+          const session = await tx.studySession.create({
+            data: {
+              userId: user?.id!,
+              deckId,
+              completed: false,
+              currentIndex: 0,
+              correctCount: 0,
+              wrongCount: 0,
+            },
+          });
+
+          // Snapshot da sessão
+          await tx.sessionFlashcard.createMany({
+            data: pendingFlashcards.map((fc) => ({
+              sessionId: session.id,
+              flashcardId: fc.id,
+            })),
+            skipDuplicates: true,
+          });
+
+          await createActivity({
+            userId: user?.id!,
+            type: "STUDY_SESSION_STARTED",
+            message: `Iniciou sessão no deck.`,
+          });
+
+          return session;
         });
 
         return c.json(
           {
             code: 201,
-            message: "Nova seção de estudo criada!",
+            message: "Nova sessão criada.",
             data: {
-              sessionId: session.id,
-              deckId: session.deckId,
-              status: "created",
+              sessionId: newSession.id,
+              deckId,
             },
           },
           201
@@ -149,35 +197,39 @@ const app = new Hono<{
               nextReview,
               lastReviewedAt: new Date(),
               performanceAvg,
+              sessionId: sessionId,
             },
-          }),
-            await tx.flashcardReview.create({
-              data: {
-                flashcardId,
-                sessionId,
-                grade,
-                timeToAnswer,
-                notes,
+          });
+
+          await tx.flashcardReview.create({
+            data: {
+              flashcardId,
+              sessionId,
+              grade,
+              timeToAnswer,
+              notes,
+            },
+          });
+
+          await tx.deck.update({
+            where: {
+              id: card?.deckId!,
+            },
+            data: {
+              reviewCount: {
+                increment: 1,
               },
-            }),
-            await tx.deck.update({
-              where: {
-                id: card?.deckId!,
-              },
-              data: {
-                reviewCount: {
-                  increment: 1,
-                },
-              },
-            }),
-            await tx.studySession.update({
-              where: { id: sessionId },
-              data: {
-                correctCount: grade >= 3 ? { increment: 1 } : undefined,
-                wrongCount: grade < 3 ? { increment: 1 } : undefined,
-                currentIndex: { increment: 1 },
-              },
-            });
+            },
+          });
+
+          await tx.studySession.update({
+            where: { id: sessionId },
+            data: {
+              correctCount: grade >= 3 ? { increment: 1 } : undefined,
+              wrongCount: grade < 3 ? { increment: 1 } : undefined,
+              currentIndex: { increment: 1 },
+            },
+          });
         });
 
         const isCorrect = grade >= 3;
@@ -210,17 +262,16 @@ const app = new Hono<{
         const user = c.get("user");
         const { sessionId } = c.req.valid("json");
 
-        await Promise.all([
-          await prisma.studySession.update({
-            where: { id: sessionId },
-            data: { endedAt: new Date(), completed: true },
-          }),
-          await updateUserStats(user?.id!, {
-            studiesCompleted: {
-              increment: 1,
-            },
-          }),
-        ]);
+        await prisma.studySession.update({
+          where: { id: sessionId },
+          data: { endedAt: new Date(), completed: true },
+        });
+
+        await updateUserStats(user?.id!, {
+          studiesCompleted: {
+            increment: 1,
+          },
+        });
 
         return c.json(
           {
@@ -235,6 +286,207 @@ const app = new Hono<{
       }
     }
   )
+  .get("/reviews", authMiddleware, readSecutiryMiddleware, async (c) => {
+    try {
+      const userId = c.get("user")?.id as string;
+
+      const now = new Date();
+
+      const { start: startOfToday, end: endOfToday } = getBrasiliaDayRange(now);
+
+      const totalFlashcards = await prisma.flashcard.count({
+        where: { userId },
+      });
+
+      const urgent = await prisma.flashcard.findMany({
+        where: {
+          userId,
+          nextReview: { lt: startOfToday },
+          deletedAt: null,
+        },
+        orderBy: { nextReview: "asc" },
+        select: {
+          deckId: true,
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          color: true,
+          difficulty: true,
+          deletedAt: true,
+          front: true,
+          back: true,
+          topic: true,
+          subtopic: true,
+          bloomLevel: true,
+          note: true,
+          generatedById: true,
+          easeFactor: true,
+          interval: true,
+          repetition: true,
+          nextReview: true,
+          lastReviewedAt: true,
+          performanceAvg: true,
+          sessionId: true,
+        },
+      });
+
+      const today = await prisma.flashcard.findMany({
+        where: {
+          userId,
+          nextReview: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+          deletedAt: null,
+        },
+        orderBy: { nextReview: "asc" },
+        select: {
+          deckId: true,
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          color: true,
+          difficulty: true,
+          deletedAt: true,
+          front: true,
+          back: true,
+          topic: true,
+          subtopic: true,
+          bloomLevel: true,
+          note: true,
+          generatedById: true,
+          easeFactor: true,
+          interval: true,
+          repetition: true,
+          nextReview: true,
+          lastReviewedAt: true,
+          performanceAvg: true,
+          sessionId: true,
+        },
+      });
+
+      const upcoming = await prisma.flashcard.findMany({
+        where: {
+          userId,
+          nextReview: {
+            gt: endOfToday,
+          },
+          deletedAt: null,
+        },
+        orderBy: { nextReview: "asc" },
+        select: {
+          deckId: true,
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          userId: true,
+          color: true,
+          difficulty: true,
+          deletedAt: true,
+          front: true,
+          back: true,
+          topic: true,
+          subtopic: true,
+          bloomLevel: true,
+          note: true,
+          generatedById: true,
+          easeFactor: true,
+          interval: true,
+          repetition: true,
+          nextReview: true,
+          lastReviewedAt: true,
+          performanceAvg: true,
+          sessionId: true,
+        },
+      });
+
+      const completedData = await prisma.flashcardReview.findMany({
+        where: {
+          flashcard: {
+            userId,
+            deletedAt: null,
+          },
+          reviewedAt: {
+            gte: startOfToday,
+            lte: endOfToday,
+          },
+        },
+        orderBy: { reviewedAt: "desc" },
+        include: {
+          flashcard: {
+            select: {
+              deckId: true,
+              id: true,
+              createdAt: true,
+              updatedAt: true,
+              userId: true,
+              color: true,
+              difficulty: true,
+              deletedAt: true,
+              front: true,
+              back: true,
+              topic: true,
+              subtopic: true,
+              bloomLevel: true,
+              note: true,
+              generatedById: true,
+              easeFactor: true,
+              interval: true,
+              repetition: true,
+              nextReview: true,
+              lastReviewedAt: true,
+              performanceAvg: true,
+              sessionId: true,
+            },
+          },
+        },
+      });
+
+      const completed = completedData.map((item) => ({
+        id: item.flashcard.id,
+        front: item.flashcard.front,
+        topic: item.flashcard.topic,
+        subtopic: item.flashcard.subtopic,
+        difficulty: item.flashcard.difficulty,
+        bloomLevel: item.flashcard.bloomLevel,
+        color: item.flashcard.color,
+        easeFactor: item.flashcard.easeFactor,
+        interval: item.flashcard.interval,
+        repetition: item.flashcard.repetition,
+        nextReview: item.flashcard.nextReview,
+        lastReviewedAt: item.flashcard.lastReviewedAt,
+        performanceAvg: item.flashcard.performanceAvg,
+        deckId: item.flashcard.deckId,
+        createdAt: item.flashcard.createdAt,
+        updatedAt: item.flashcard.updatedAt,
+        userId: item.flashcard.userId,
+        deletedAt: item.flashcard.deletedAt,
+        back: item.flashcard.back,
+        note: item.flashcard.note,
+        generatedById: item.flashcard.generatedById,
+        sessionId: item.flashcard.sessionId,
+      }));
+
+      return c.json(
+        {
+          code: 200,
+          message: null,
+          data: {
+            urgent,
+            today,
+            upcoming,
+            completed,
+            totalFlashcards,
+          },
+        },
+        200
+      );
+    } catch (error) {
+      return handlePrismaError(c, error);
+    }
+  })
   .get(
     "/:id",
     authMiddleware,
@@ -308,14 +560,29 @@ const app = new Hono<{
           );
         }
 
-        const total = session.deck.flashcards.length;
-        const reviewed = session.flashcardReviews.length;
+        // 🔒 REGRA: sessão finalizada NÃO reabre
+        const sessionCreatedAt = session.createdAt;
+
+        // Só contam flashcards que EXISTIAM quando a sessão começou
+        const flashcardsValidos = session.deck.flashcards.filter(
+          (card) => card.createdAt <= sessionCreatedAt
+        );
+
+        const total = flashcardsValidos.length;
+
+        const reviewed = session.flashcardReviews.filter((r) =>
+          flashcardsValidos.some((card) => card.id === r.flashcardId)
+        ).length;
+
         const remaining = total - reviewed;
+
         const progress = total > 0 ? reviewed / total : 0;
+
         const totalAnswered = session.correctCount + session.wrongCount;
         const accuracy =
           totalAnswered > 0 ? session.correctCount / totalAnswered : 0;
 
+        // 🟢 FECHAR sessão quando tudo foi revisado
         if (reviewed >= total && !session.completed) {
           await prisma.studySession.update({
             where: { id: session.id },
@@ -329,10 +596,10 @@ const app = new Hono<{
           session.endedAt = new Date();
         }
 
-        const nextCard = session.deck.flashcards.find(
+        // 🔍 Próximo card permitido
+        const nextCard = flashcardsValidos.find(
           (card) =>
-            !session.flashcardReviews.some((r) => r.flashcardId === card.id) &&
-            (!card.nextReview || card.nextReview <= new Date())
+            !session.flashcardReviews.some((r) => r.flashcardId === card.id)
         );
 
         return c.json(
@@ -343,83 +610,21 @@ const app = new Hono<{
               sessionId: session.id,
               deckId: session.deckId,
               deckTitle: session.deck.name,
+
               totalFlashcards: total,
               reviewedFlashcards: reviewed,
               remainingFlashcards: remaining,
               progress,
+
               correctCount: session.correctCount,
               wrongCount: session.wrongCount,
+
               nextCard: nextCard ?? null,
+
               completed: session.completed,
               endedAt: session.endedAt,
+
               accuracy: (accuracy * 100).toFixed(2),
-            },
-          },
-          200
-        );
-      } catch (error) {
-        return handlePrismaError(c, error);
-      }
-    }
-  )
-  .delete(
-    "/:id",
-    authMiddleware,
-    zValidator(
-      "param",
-      z.object({
-        id: z.string(),
-      })
-    ),
-    async (c) => {
-      try {
-        const { id } = c.req.valid("param");
-
-        const result = await prisma.$transaction(async (tx) => {
-          const deleted = await prisma.studySession.delete({
-            where: {
-              id,
-            },
-            select: {
-              deck: {
-                select: {
-                  id: true,
-                },
-              },
-            },
-          });
-
-          await prisma.flashcard.updateMany({
-            where: {
-              deckId: deleted.deck.id,
-            },
-            data: {
-              easeFactor: 2.5,
-              interval: 0,
-              repetition: 0,
-              lastReviewedAt: null,
-              nextReview: null,
-            },
-          });
-
-          await prisma.deck.update({
-            where: {
-              id: deleted.deck.id,
-            },
-            data: {
-              reviewCount: 0,
-            },
-          });
-
-          return deleted;
-        });
-
-        return c.json(
-          {
-            code: 200,
-            message: "Seção de estudo resetada.",
-            data: {
-              deckId: result.deck.id,
             },
           },
           200

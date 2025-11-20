@@ -30,7 +30,7 @@ export const CreateFlashcardButton = ({
     }
   }, [openModalFlashcard, router]);
 
-  const { decks, isLoading } = useGetDeckNames({});
+  const { data, isLoading } = useGetDeckNames({});
 
   return (
     <ResponsiveDialog
@@ -72,7 +72,7 @@ export const CreateFlashcardButton = ({
           {!type ? (
             <FlashcardForm
               close={setOpen}
-              decks={decks}
+              decks={data?.data}
               router={router}
               openModalFlashcard={openModalFlashcard}
               isLoadingDeckNames={isLoading}
@@ -81,7 +81,7 @@ export const CreateFlashcardButton = ({
           ) : (
             <FlashcardGeneration
               close={setOpen}
-              decks={decks}
+              decks={data?.data}
               router={router}
               isLoadingDeckNames={isLoading}
               deckId={deckId}

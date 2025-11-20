@@ -25,13 +25,13 @@ const buttonVariants = cva(
         link: "text-foreground hover:text-muted-foreground underline-offset-4 hover:underline",
         icon: "bg-background/20 backdrop-blur-md rounded-xl transition-colors duration-300 hover:scale-110 group/btn border border-white/30",
         gradient:
-          "bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 hover:scale-110",
+          "bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 text-white",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         full: "h-10 w-full rounded-md px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4 text-lg",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4 text-base",
         icon: "size-9",
         "icon-sm": "size-8",
         "icon-lg": "size-10",

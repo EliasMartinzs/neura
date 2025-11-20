@@ -1,16 +1,69 @@
 import { StudiedCategory } from "@/utils/type";
 import { Crown, Flame, Hash, Sparkles, Star, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
+
+const colors = [
+  {
+    main: "#fbbf24",
+    gradient: "from-yellow-400 to-orange-500",
+    glow: "rgba(251, 191, 36, 0.4)",
+  },
+  {
+    main: "#a78bfa",
+    gradient: "from-purple-400 to-pink-500",
+    glow: "rgba(167, 139, 250, 0.4)",
+  },
+  {
+    main: "#60a5fa",
+    gradient: "from-blue-400 to-cyan-500",
+    glow: "rgba(96, 165, 250, 0.4)",
+  },
+  {
+    main: "#34d399",
+    gradient: "from-emerald-400 to-teal-500",
+    glow: "rgba(52, 211, 153, 0.4)",
+  },
+  {
+    main: "#f472b6",
+    gradient: "from-pink-400 to-rose-500",
+    glow: "rgba(244, 114, 182, 0.4)",
+  },
+  {
+    main: "#818cf8",
+    gradient: "from-indigo-400 to-purple-500",
+    glow: "rgba(129, 140, 248, 0.4)",
+  },
+  {
+    main: "#fb923c",
+    gradient: "from-orange-400 to-red-500",
+    glow: "rgba(251, 146, 60, 0.4)",
+  },
+  {
+    main: "#22d3ee",
+    gradient: "from-cyan-400 to-blue-500",
+    glow: "rgba(34, 211, 238, 0.4)",
+  },
+  {
+    main: "#a3e635",
+    gradient: "from-lime-400 to-green-500",
+    glow: "rgba(163, 230, 53, 0.4)",
+  },
+  {
+    main: "#c084fc",
+    gradient: "from-violet-400 to-fuchsia-500",
+    glow: "rgba(192, 132, 252, 0.4)",
+  },
+];
 
 type Props = {
   topTags: StudiedCategory[];
 };
 
-export function TopTagsWidget({ topTags }: Props) {
+export function TopTagsWidgetComponent({ topTags }: Props) {
   const [selectedTag, setSelectedTag] = useState<number>(0);
 
   if (!topTags) {
-    return <></>;
+    return null;
   }
 
   const tags = useMemo(() => {
@@ -20,61 +73,11 @@ export function TopTagsWidget({ topTags }: Props) {
     }));
   }, [topTags]);
 
+  if (!tags.length) {
+    return null;
+  }
+
   const maxCount = Math.max(...tags.map((tag) => tag.count), 1);
-
-  const colors = [
-    {
-      main: "#fbbf24",
-      gradient: "from-yellow-400 to-orange-500",
-      glow: "rgba(251, 191, 36, 0.4)",
-    },
-    {
-      main: "#a78bfa",
-      gradient: "from-purple-400 to-pink-500",
-      glow: "rgba(167, 139, 250, 0.4)",
-    },
-    {
-      main: "#60a5fa",
-      gradient: "from-blue-400 to-cyan-500",
-      glow: "rgba(96, 165, 250, 0.4)",
-    },
-    {
-      main: "#34d399",
-      gradient: "from-emerald-400 to-teal-500",
-      glow: "rgba(52, 211, 153, 0.4)",
-    },
-    {
-      main: "#f472b6",
-      gradient: "from-pink-400 to-rose-500",
-      glow: "rgba(244, 114, 182, 0.4)",
-    },
-    {
-      main: "#818cf8",
-      gradient: "from-indigo-400 to-purple-500",
-      glow: "rgba(129, 140, 248, 0.4)",
-    },
-    {
-      main: "#fb923c",
-      gradient: "from-orange-400 to-red-500",
-      glow: "rgba(251, 146, 60, 0.4)",
-    },
-    {
-      main: "#22d3ee",
-      gradient: "from-cyan-400 to-blue-500",
-      glow: "rgba(34, 211, 238, 0.4)",
-    },
-    {
-      main: "#a3e635",
-      gradient: "from-lime-400 to-green-500",
-      glow: "rgba(163, 230, 53, 0.4)",
-    },
-    {
-      main: "#c084fc",
-      gradient: "from-violet-400 to-fuchsia-500",
-      glow: "rgba(192, 132, 252, 0.4)",
-    },
-  ];
-
   const currentTag = tags[selectedTag];
   const currentColor = colors[selectedTag];
 
@@ -291,33 +294,9 @@ export function TopTagsWidget({ topTags }: Props) {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes orbit {
-          from { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(0deg); }
-          to { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(360deg); }
-        }
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 6px;
-        }
-        .scrollbar-thumb-slate-700::-webkit-scrollbar-thumb {
-          background-color: rgb(51, 65, 85);
-          border-radius: 3px;
-        }
-        .scrollbar-track-slate-800\/50::-webkit-scrollbar-track {
-          background-color: rgba(30, 41, 59, 0.5);
-        }
-      `}</style>
     </div>
   );
 }
+
+export const TopTagsWidget = memo(TopTagsWidgetComponent);
+TopTagsWidget.displayName = "TopTagsWidget";

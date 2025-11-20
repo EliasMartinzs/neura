@@ -11,6 +11,8 @@ import { Hono } from "hono";
 import z from "zod";
 import { AppVariables } from "./route";
 import { decrementBloomLevel } from "@/lib/helpers/decrement-bloom-level";
+import { $Enums } from "@prisma/client";
+import { incrementBloomLevel } from "@/lib/helpers/increment-bloom-level";
 
 const app = new Hono<{
   Variables: AppVariables;
@@ -324,7 +326,7 @@ const app = new Hono<{
         const user = c.get("user");
         const userId = user?.id as string;
 
-        await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx) => {
           const deck = await tx.deck.create({
             data: {
               ...values,
@@ -369,13 +371,17 @@ const app = new Hono<{
             userId: userId,
             type: "CREATE_DECK",
           });
+
+          return {
+            id: deck.id,
+          };
         });
 
         return c.json(
           {
             code: 201,
             message: "Deck criado com sucesso",
-            data: null,
+            data: result.id,
           },
           201
         );
@@ -506,6 +512,9 @@ const app = new Hono<{
             data: {
               deletedAt: null,
             },
+            include: {
+              flashcards: true,
+            },
           });
 
           await tx.flashcard.updateMany({
@@ -516,6 +525,24 @@ const app = new Hono<{
               deletedAt: null,
             },
           });
+
+          const current = deck.flashcards.map((item) => ({
+            level: item.bloomLevel as string,
+          }));
+
+          const grouped = current.reduce((acc, item) => {
+            acc[item.level] = (acc[item.level] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          for (const [level, count] of Object.entries(grouped)) {
+            await incrementBloomLevel({
+              client: tx,
+              userId,
+              bloomLevel: level,
+              count,
+            });
+          }
 
           for (const tag of deck.tags) {
             await tx.userTagCount.upsert({
@@ -590,7 +617,7 @@ const app = new Hono<{
         await prisma.$transaction(async (tx) => {
           const deck = await tx.deck.findUnique({
             where: { id: id },
-            select: { tags: true, id: true },
+            select: { tags: true, id: true, flashcards: true },
           });
 
           if (!deck) {
@@ -602,6 +629,23 @@ const app = new Hono<{
               },
               404
             );
+          }
+
+          const current = deck.flashcards.map((item) => ({
+            level: item.bloomLevel as string,
+          }));
+
+          const grouped = current.reduce((acc, item) => {
+            acc[item.level] = (acc[item.level] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+
+          for (const [level, count] of Object.entries(grouped)) {
+            await decrementBloomLevel({
+              client: tx,
+              userId: user!.id,
+              bloomLevel: level,
+            });
           }
 
           for (const tag of deck.tags) {

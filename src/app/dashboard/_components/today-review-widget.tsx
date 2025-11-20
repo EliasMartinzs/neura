@@ -10,7 +10,8 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { memo } from "react";
 
 type Flashcard = {
   id: string;
@@ -28,9 +29,8 @@ type Props = {
   flashcards: Flashcard[];
 };
 
-export function TodayReviewsWidget({ flashcards }: Props) {
-  const [animated, setAnimated] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+function TodayReviewsWidgetComponent({ flashcards }: Props) {
+  const router = useRouter();
 
   const {
     difficultyConfig,
@@ -41,15 +41,6 @@ export function TodayReviewsWidget({ flashcards }: Props) {
     now,
   } = useTodayReviewWidget(flashcards);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimated(true), 200);
-    const interval = setInterval(() => setCurrentTime(new Date()), 60000); // Atualiza a cada minuto
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
-  }, []);
-
   return (
     <div className="w-full">
       <div className="relative overflow-hidden rounded-4xl bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 border border-slate-700/50 backdrop-blur-2xl shadow-2xl">
@@ -58,7 +49,10 @@ export function TodayReviewsWidget({ flashcards }: Props) {
         <div className="absolute bottom-0 left-0 w-56 h-56 bg-linear-to-tr from-red-500/10 to-pink-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         {/* Header */}
-        <div className="relative p-5 pb-4 border-b border-slate-700/50">
+        <div
+          className="relative p-5 pb-4 border-b border-slate-700/50 cursor-pointer"
+          onClick={() => router.push("/dashboard/review")}
+        >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -67,16 +61,7 @@ export function TodayReviewsWidget({ flashcards }: Props) {
                   <Flame className="w-6 h-6 text-orange-400" />
                 </div>
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-white">Hoje</h3>
-                <p className="text-slate-400 text-xs flex items-center gap-1.5">
-                  <Clock className="w-3 h-3" />
-                  {currentTime.toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
+              <p className="font-medium text-lg">Hoje</p>
             </div>
 
             {/* Badge de total */}
@@ -105,18 +90,7 @@ export function TodayReviewsWidget({ flashcards }: Props) {
                 </span>
               </div>
               <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-orange-500 to-red-500 rounded-full transition-all duration-1000"
-                  style={{
-                    width: animated
-                      ? `${
-                          ((flashcards.length - overdueToday.length) /
-                            flashcards.length) *
-                          100
-                        }%`
-                      : "0%",
-                  }}
-                />
+                <div className="h-full bg-linear-to-r from-orange-500 to-red-500 rounded-full transition-all duration-1000" />
               </div>
             </div>
           )}
@@ -125,7 +99,10 @@ export function TodayReviewsWidget({ flashcards }: Props) {
         {/* Cards List */}
         <div className="relative p-5">
           {flashcards.length > 0 ? (
-            <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/50">
+            <div
+              className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/50"
+              onClick={() => router.push(`/dashboard/review`)}
+            >
               {flashcards.map((card, index) => {
                 const diffStyle =
                   difficultyConfig[
@@ -283,29 +260,9 @@ export function TodayReviewsWidget({ flashcards }: Props) {
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 6px;
-        }
-        .scrollbar-thumb-slate-700::-webkit-scrollbar-thumb {
-          background-color: rgb(51, 65, 85);
-          border-radius: 3px;
-        }
-        .scrollbar-track-slate-800\/50::-webkit-scrollbar-track {
-          background-color: rgba(30, 41, 59, 0.5);
-        }
-      `}</style>
     </div>
   );
 }
+
+export const TodayReviewWidget = memo(TodayReviewsWidgetComponent);
+TodayReviewWidget.displayName = "TodayReviewWidget";

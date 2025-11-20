@@ -1,7 +1,4 @@
 import {
-  BadgeHelpIcon,
-  Brain,
-  CircleHelp,
   House,
   Layers,
   LucideIcon,
@@ -12,7 +9,7 @@ import {
 
 type LinksHeader = {
   id: number;
-  href: string | null;
+  href: string;
   icon: LucideIcon;
   label: string;
   items?: {
@@ -44,7 +41,7 @@ export const linksHeader: LinksHeader[] = [
   },
   {
     id: 4,
-    href: "/dashboard/reviews",
+    href: "/dashboard/review",
     icon: Star,
     label: "Reviews",
   },
@@ -53,19 +50,5 @@ export const linksHeader: LinksHeader[] = [
     href: "/dashboard/profile",
     icon: User,
     label: "Perfil",
-  },
-  {
-    id: 6,
-    href: null,
-    icon: CircleHelp,
-    label: "Sobre",
-    items: [
-      {
-        id: 1,
-        label: "Bloom Level",
-        href: "/dashboard/about/bloom-level",
-        icon: Brain,
-      },
-    ],
   },
 ] as const;

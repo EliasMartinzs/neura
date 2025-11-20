@@ -13,10 +13,15 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useGetDeckNames } from "@/features/deck/api/use-get-deck-names";
 import { useFlashcardFiltersStore } from "@/features/flashcard/hooks/use-flashcard-filters-store";
+import { EmptyState } from "@/lib/query/empty-state";
+import { ErrorState } from "@/lib/query/error-state";
+import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
+import { LoadingState } from "@/lib/query/loading-state";
+import { QueryState } from "@/lib/query/query-state";
 
 export const FlashcardsFilters = () => {
-  const { clearDeck, onSet, deck, setPerPage } = useFlashcardFiltersStore();
-  const { decks } = useGetDeckNames({
+  const { clearDeck, deck, onSet, setPerPage } = useFlashcardFiltersStore();
+  const query = useGetDeckNames({
     hasFlashcard: true,
   });
 
@@ -25,38 +30,50 @@ export const FlashcardsFilters = () => {
       <Separator orientation="horizontal" />
       <h2 className="text-lg capitalize font-semibold lg:text-2xl">Filtros</h2>
       <div className="w-full flex max-sm:flex-col gap-4 justify-between">
-        <NavigationMenu>
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger
-                className="text-lg p-0"
-                disabled={!decks?.length}
-              >
-                Decks
-              </NavigationMenuTrigger>
-              <NavigationMenuContent className="flex gap-3 min-w-fit overflow-hidden">
-                {decks?.map((d) => (
-                  <Button
-                    key={d.id}
-                    onClick={() => onSet(d.name)}
-                    variant={d.name === deck ? "outline" : "ghost"}
-                    className="w-auto"
+        <QueryState
+          query={query}
+          loading={<LoadingState />}
+          error={({ refetch }) => <ErrorState onRetry={refetch} />}
+          empty={<EmptyState />}
+          fetchingIndicator={<FetchingIndicatorState />}
+        >
+          {(data) => (
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className="text-lg p-0"
+                    disabled={!data.data?.length}
                   >
-                    {d.name}
-                  </Button>
-                ))}
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+                    Decks
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent className="flex gap-3 min-w-fit overflow-hidden">
+                    {data.data?.map((d) => (
+                      <Button
+                        key={d.id}
+                        onClick={() => onSet(d.name)}
+                        variant={d.name === deck ? "outline" : "ghost"}
+                        className="w-auto"
+                      >
+                        {d.name}
+                      </Button>
+                    ))}
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
-            <Button
-              variant={"ghost"}
-              onClick={clearDeck}
-              disabled={!decks?.length}
-            >
-              Limpar filtros
-            </Button>
-          </NavigationMenuList>
-        </NavigationMenu>
+                <Button
+                  variant={"ghost"}
+                  onClick={clearDeck}
+                  disabled={!data.data?.length}
+                >
+                  Limpar filtros
+                </Button>
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
+        </QueryState>
+
+        <Separator orientation="vertical" />
 
         <div className="flex items-center gap-x-3">
           <p>Decks por paginas</p>

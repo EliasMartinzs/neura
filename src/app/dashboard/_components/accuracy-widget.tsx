@@ -1,30 +1,21 @@
 import { cn } from "@/lib/utils";
-import { Award, Target, TrendingUp, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Award, Sparkles, Target, TrendingUp } from "lucide-react";
+import { memo, useMemo } from "react";
 
 type Props = {
-  accuracyRateCards: number;
-  totalCorrectAnswers: number;
-  totalWrongAnswers: number;
+  accuracyWidget: {
+    accuracyRateCards: number;
+    totalCorrectAnswers: number;
+    totalWrongAnswers: number;
+  };
 };
 
-export function AccuracyWidget({
-  accuracyRateCards,
-  totalCorrectAnswers,
-  totalWrongAnswers,
+function AccuracyWidgetComponent({
+  accuracyWidget: { accuracyRateCards, totalCorrectAnswers, totalWrongAnswers },
 }: Props) {
-  const [animatedPercent, setAnimatedPercent] = useState(0);
   const percent = Number(accuracyRateCards.toFixed(2));
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimatedPercent(percent);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [percent]);
-
-  // Determinar cor e mensagem baseado na performance
-  const getPerformanceData = () => {
+  const performance = useMemo(() => {
     if (percent >= 80) {
       return {
         color: "from-emerald-500 via-teal-500 to-cyan-500",
@@ -33,7 +24,9 @@ export function AccuracyWidget({
         badge: "Excelente",
         badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
       };
-    } else if (percent >= 60) {
+    }
+
+    if (percent >= 60) {
       return {
         color: "from-blue-500 via-indigo-500 to-purple-500",
         strokeColor: "#3b82f6",
@@ -41,25 +34,22 @@ export function AccuracyWidget({
         badge: "Bom",
         badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
       };
-    } else {
-      return {
-        color: "from-orange-500 via-amber-500 to-yellow-500",
-        strokeColor: "#f97316",
-        icon: TrendingUp,
-        badge: "Em Progresso",
-        badgeColor: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-      };
     }
-  };
 
-  const performance = getPerformanceData();
+    return {
+      color: "from-orange-500 via-amber-500 to-yellow-500",
+      strokeColor: "#f97316",
+      icon: TrendingUp,
+      badge: "Em Progresso",
+      badgeColor: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    };
+  }, [percent]);
+
   const PerformanceIcon = performance.icon;
 
-  // Calcular o ângulo para o SVG circular
   const radius = 100;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset =
-    circumference - (animatedPercent / 100) * circumference;
+  const strokeDashoffset = circumference - (percent / 100) * circumference;
 
   return (
     <div className="w-full">
@@ -252,3 +242,6 @@ export function AccuracyWidget({
     </div>
   );
 }
+
+export const AccuracyWidget = memo(AccuracyWidgetComponent);
+AccuracyWidget.displayName = "AccuracyWidget";

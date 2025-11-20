@@ -18,13 +18,5 @@ export const useGetDeck = (id: string) => {
     },
   });
 
-  const { data, isLoading, isError, refetch, isFetching } = query;
-
-  return {
-    deck: data?.data,
-    isLoading,
-    isError,
-    refetch,
-    isFetching,
-  };
+  return query;
 };

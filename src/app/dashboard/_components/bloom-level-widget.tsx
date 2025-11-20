@@ -1,13 +1,64 @@
-import React, { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
 } from "recharts";
+
+const bloomLevels = [
+  {
+    value: "REMEMBER",
+    label: "Lembrar",
+    icon: "🧠",
+    description: "Recordar informações",
+    color: "#8b5cf6",
+    gradient: "from-violet-500 to-purple-600",
+  },
+  {
+    value: "UNDERSTAND",
+    label: "Entender",
+    icon: "💡",
+    description: "Explicar ideias",
+    color: "#06b6d4",
+    gradient: "from-cyan-500 to-blue-600",
+  },
+  {
+    value: "APPLY",
+    label: "Aplicar",
+    icon: "🔧",
+    description: "Usar conhecimento",
+    color: "#10b981",
+    gradient: "from-emerald-500 to-green-600",
+  },
+  {
+    value: "ANALYZE",
+    label: "Analisar",
+    icon: "🔍",
+    description: "Examinar detalhes",
+    color: "#f59e0b",
+    gradient: "from-amber-500 to-orange-600",
+  },
+  {
+    value: "EVALUATE",
+    label: "Avaliar",
+    icon: "⚖️",
+    description: "Julgar informações",
+    color: "#ef4444",
+    gradient: "from-red-500 to-rose-600",
+  },
+  {
+    value: "CREATE",
+    label: "Criar",
+    icon: "✨",
+    description: "Produzir algo novo",
+    color: "#ec4899",
+    gradient: "from-pink-500 to-fuchsia-600",
+  },
+];
 
 type Props = {
   bloomData: {
@@ -16,11 +67,24 @@ type Props = {
   }[];
 };
 
-export const BloomLevelWidget = ({ bloomData }: Props) => {
+export const BloomLevelWidgetComponent = ({ bloomData }: Props) => {
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
 
-  console.log(bloomData);
+  if (!bloomData) {
+    return null;
+  }
+
+  const enrichedData = useMemo(() => {
+    return bloomData.map((data) => {
+      const level = bloomLevels.find((l) => l.value === data.level);
+      return { ...data, ...level };
+    });
+  }, [bloomData]);
+
+  if (!enrichedData.length) {
+    return null;
+  }
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px)");
@@ -34,62 +98,6 @@ export const BloomLevelWidget = ({ bloomData }: Props) => {
   if (isDesktop === null) {
     return null;
   }
-
-  const bloomLevels = [
-    {
-      value: "REMEMBER",
-      label: "Lembrar",
-      icon: "🧠",
-      description: "Recordar informações",
-      color: "#8b5cf6",
-      gradient: "from-violet-500 to-purple-600",
-    },
-    {
-      value: "UNDERSTAND",
-      label: "Entender",
-      icon: "💡",
-      description: "Explicar ideias",
-      color: "#06b6d4",
-      gradient: "from-cyan-500 to-blue-600",
-    },
-    {
-      value: "APPLY",
-      label: "Aplicar",
-      icon: "🔧",
-      description: "Usar conhecimento",
-      color: "#10b981",
-      gradient: "from-emerald-500 to-green-600",
-    },
-    {
-      value: "ANALYZE",
-      label: "Analisar",
-      icon: "🔍",
-      description: "Examinar detalhes",
-      color: "#f59e0b",
-      gradient: "from-amber-500 to-orange-600",
-    },
-    {
-      value: "EVALUATE",
-      label: "Avaliar",
-      icon: "⚖️",
-      description: "Julgar informações",
-      color: "#ef4444",
-      gradient: "from-red-500 to-rose-600",
-    },
-    {
-      value: "CREATE",
-      label: "Criar",
-      icon: "✨",
-      description: "Produzir algo novo",
-      color: "#ec4899",
-      gradient: "from-pink-500 to-fuchsia-600",
-    },
-  ];
-
-  const enrichedData = bloomData.map((data) => {
-    const level = bloomLevels.find((l) => l.value === data.level);
-    return { ...data, ...level };
-  });
 
   const totalCards = enrichedData.reduce((sum, item) => sum + item.count, 0);
   const maxCount = Math.max(...enrichedData.map((d) => d.count));
@@ -305,3 +313,5 @@ export const BloomLevelWidget = ({ bloomData }: Props) => {
     </div>
   );
 };
+
+export const BloomLevelWidget = memo(BloomLevelWidgetComponent);

@@ -30,6 +30,7 @@ export const useGetDecks = ({ tags, page, perPage }: UseGetDecksProps = {}) => {
       return res.json();
     },
     enabled: true,
+    staleTime: Infinity,
   });
 
   return query;

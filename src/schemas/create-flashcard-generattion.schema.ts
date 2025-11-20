@@ -7,7 +7,7 @@ const difficultyEnum = z.enum(FlashcardDifficulty, {
 const bloomLevelEnum = z.enum(BloomLevel, {
   error: "Selecione o nível cognitivo (Bloom).",
 });
-const generationModeEnum = z.enum(["SIMPLE", "DETAILED", "QUIZ", "EXPLAINED"]);
+const generationModeEnum = z.enum(["SIMPLE", "DETAILED", "EXPLAINED"]);
 
 export const createFlashcardGenerationSchema = z.object({
   prompt: z

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 type BloomStat = { level: string; count: number };
 
@@ -11,16 +11,24 @@ const DEFAULT_BLOOMS: BloomStat[] = [
   { level: "CREATE", count: 0 },
 ];
 
-export async function incrementBloomLevel(
-  tx: Prisma.TransactionClient,
-  userId: string,
-  bloomLevel?: string
-) {
+type Props = {
+  client: PrismaClient | Prisma.TransactionClient;
+  userId: string;
+  bloomLevel?: string;
+  count?: number;
+};
+
+export async function incrementBloomLevel({
+  client,
+  userId,
+  bloomLevel,
+  count = 1,
+}: Props) {
   if (!bloomLevel) return;
 
   const LEVEL = bloomLevel.toUpperCase();
 
-  const stats = await tx.userStats.findUnique({
+  const stats = await client.userStats.findUnique({
     where: { userId },
     select: { mostStudiedBloomLevel: true },
   });
@@ -32,14 +40,14 @@ export async function incrementBloomLevel(
     if (key in base) base[key] = Number(item.count) || 0;
   }
 
-  base[LEVEL]++;
+  base[LEVEL] += count;
 
   const finalArray: BloomStat[] = DEFAULT_BLOOMS.map((b) => ({
     level: b.level,
     count: base[b.level],
   }));
 
-  await tx.userStats.upsert({
+  await client.userStats.upsert({
     where: { userId },
     create: {
       userId,

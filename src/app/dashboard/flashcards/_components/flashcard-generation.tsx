@@ -135,7 +135,7 @@ export const FlashcardGeneration = ({
                   ) : isLoadingDeckNames ? (
                     <Loader2 className="animate-spin" />
                   ) : !decks ? (
-                    <>Houve um erro, tente novamente</>
+                    <p>Houve um erro, tente novamente</p>
                   ) : (
                     <div className="space-y-4 max-h-[70svh]">
                       <div

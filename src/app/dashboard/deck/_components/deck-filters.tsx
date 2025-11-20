@@ -15,48 +15,17 @@ import { Separator } from "@/components/ui/separator";
 import { useGetAllTags } from "@/features/deck/api/use-get-tags";
 import { useDeckFiltersStore } from "@/features/deck/store/use-deck-filters-store";
 import { useTrashStore } from "@/features/deck/store/use-trash-store";
+import { EmptyState } from "@/lib/query/empty-state";
+import { ErrorState } from "@/lib/query/error-state";
+import { LoadingState } from "@/lib/query/loading-state";
+import { QueryState } from "@/lib/query/query-state";
 import { Trash2 } from "lucide-react";
-import Image from "next/image";
-import ErrorImage from "../../../../../public/undraw_connection-lost.svg";
-import LoadingImage from "../../../../../public/undraw_loading.svg";
+import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 
 export const DeckFilters = () => {
-  const { data, isLoading, isError, refetch } = useGetAllTags();
+  const query = useGetAllTags();
   const { tags, toggleTag, clearTags, setPerPage } = useDeckFiltersStore();
   const { onOpen } = useTrashStore();
-
-  if (isLoading) {
-    return (
-      <div className="w-full min-h-[65svh] overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
-        <Image
-          src={LoadingImage}
-          alt="loading"
-          width={380}
-          height={380}
-          className="object-center object-contain"
-        />
-
-        <h4 className="text-3xl">Carregando...</h4>
-      </div>
-    );
-  }
-
-  if (isError || !data) {
-    <div className="w-full min-h-[65svh] overflow-y-hidden flex items-center justify-center flex-col gap-y-6">
-      <Image
-        src={ErrorImage}
-        alt="error"
-        width={380}
-        height={380}
-        className="object-center object-contain"
-      />
-
-      <h4 className="text-3xl">
-        Houve um erro,{" "}
-        <Button onClick={() => refetch()}>Tente novamente</Button>
-      </h4>
-    </div>;
-  }
 
   return (
     <div className="space-y-6">
@@ -64,38 +33,47 @@ export const DeckFilters = () => {
       <h2 className="text-lg capitalize font-semibold lg:text-2xl">Filtros</h2>
 
       <div className="w-full flex flex-col lg:flex-row lg:justify-between max-sm:gap-4">
-        {/* Tags */}
-        <NavigationMenu>
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger
-                className="text-lg p-0"
-                disabled={!data?.data?.length}
-              >
-                Tags
-              </NavigationMenuTrigger>
-              <NavigationMenuContent className="min-w-sm md:min-w-md lg:min-w-lg flex flex-wrap gap-2">
-                {data?.data?.map((tag) => (
-                  <Button
-                    key={tag}
-                    variant={tags.includes(tag) ? "outline" : "ghost"}
-                    onClick={() => toggleTag(tag)}
+        <QueryState
+          query={query}
+          loading={<LoadingState />}
+          error={({ refetch }) => <ErrorState onRetry={refetch} />}
+          empty={<EmptyState />}
+          fetchingIndicator={<FetchingIndicatorState />}
+        >
+          {(data) => (
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className="text-lg p-0"
+                    disabled={!data?.data?.length}
                   >
-                    {tag}
-                  </Button>
-                ))}
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+                    Tags
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent className="min-w-sm md:min-w-md lg:min-w-lg flex flex-wrap gap-2">
+                    {data?.data?.map((tag) => (
+                      <Button
+                        key={tag}
+                        variant={tags.includes(tag) ? "outline" : "ghost"}
+                        onClick={() => toggleTag(tag)}
+                      >
+                        {tag}
+                      </Button>
+                    ))}
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
-            <Button
-              variant={"ghost"}
-              onClick={clearTags}
-              disabled={!data?.data?.length}
-            >
-              Limpar filtros
-            </Button>
-          </NavigationMenuList>
-        </NavigationMenu>
+                <Button
+                  variant={"ghost"}
+                  onClick={clearTags}
+                  disabled={!data?.data?.length}
+                >
+                  Limpar filtros
+                </Button>
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
+        </QueryState>
 
         <Separator orientation="vertical" />
 

@@ -17,18 +17,8 @@ import { useCreateDeck } from "@/features/deck/api/use-create-deck";
 import { circleColors } from "@/constants/circle-colors";
 import { DIFFICULTY } from "@/constants/difficulty";
 import { FileText, Palette, Sparkles, Tag, Target, Trash2 } from "lucide-react";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { toast } from "sonner";
 
-export const DeckForm = ({
-  close,
-  openModalDeck,
-  router,
-}: {
-  close: (prev: boolean) => void;
-  openModalDeck: string | null;
-  router: AppRouterInstance;
-}) => {
+export const DeckForm = ({ close }: { close: (prev: boolean) => void }) => {
   const form = useForm<CreateDeckForm>({
     resolver: zodResolver(createDeckSchema),
     defaultValues: {
@@ -67,11 +57,7 @@ export const DeckForm = ({
 
   async function handleCreateDeck(data: CreateDeckForm) {
     mutate(data, {
-      onSuccess: () => {
-        if (openModalDeck) {
-          router.push("/dashboard/flashcards?open-modal-flashcard=true");
-          toast.success("Redirecionando para a criação do flashcard...");
-        }
+      onSuccess: ({ data }) => {
         close(false);
         form.reset();
       },

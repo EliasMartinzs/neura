@@ -19,8 +19,8 @@ export const useEndSession = () => {
       return await res.json();
     },
     onSuccess: async ({ message }) => {
-      toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      queryClient.invalidateQueries({ queryKey: ["deck-by-id"] });
     },
     onError: ({ message }) => {
       toast.error(message);

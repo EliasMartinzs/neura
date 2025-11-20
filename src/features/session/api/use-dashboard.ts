@@ -12,6 +12,7 @@ export const useDashboard = () => {
 
       return await res.json();
     },
+    staleTime: Infinity,
   });
 
   return query;

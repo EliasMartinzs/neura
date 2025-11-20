@@ -2,6 +2,7 @@ import { circleColors } from "@/constants/circle-colors";
 import { generateFlashcardsAI } from "@/features/flashcard/utils/generate-flashcard-ai";
 import prisma from "@/lib/db";
 import { createActivity } from "@/lib/helpers/create-activity";
+import { decrementBloomLevel } from "@/lib/helpers/decrement-bloom-level";
 import { incrementBloomLevel } from "@/lib/helpers/increment-bloom-level";
 import { updateUserStats } from "@/lib/update-user-stats";
 import { authMiddleware } from "@/middlewares/auth-middleware";
@@ -11,11 +12,10 @@ import { createFlashcardGenerationSchema } from "@/schemas/create-flashcard-gene
 import { createFlashcardSchema } from "@/schemas/create-flashcard.schema";
 import { handlePrismaError } from "@/utils/handle-prisma-error";
 import { zValidator } from "@hono/zod-validator";
-import { $Enums, BloomLevel, FlashcardDifficulty } from "@prisma/client";
+import { BloomLevel, FlashcardDifficulty } from "@prisma/client";
 import { Hono } from "hono";
 import z from "zod";
 import { AppVariables } from "./route";
-import { decrementBloomLevel } from "@/lib/helpers/decrement-bloom-level";
 
 const app = new Hono<{
   Variables: AppVariables;
@@ -134,81 +134,49 @@ const app = new Hono<{
         const values = c.req.valid("json");
 
         const result = await prisma.$transaction(async (tx) => {
+          // 1. Criar o flashcard (sem resetar nada)
           const flashcard = await tx.flashcard.create({
             data: {
               userId: user?.id as string,
+              easeFactor: 2.5,
+              interval: 0,
+              repetition: 0,
+              nextReview: null,
               ...values,
             },
           });
 
-          await tx.userStats.update({
-            where: {
-              userId: user?.id,
-            },
-            data: {
-              flashcardsCreated: { increment: 1 },
-            },
+          // 2. Atualizar userStats
+          await updateUserStats(user?.id!, {
+            flashcardsCreated: { increment: 1 },
           });
 
-          await incrementBloomLevel(
-            tx,
-            user?.id as string,
-            flashcard.bloomLevel as string
-          );
-
-          await tx.flashcardReview.deleteMany({
-            where: {
-              flashcard: {
-                deckId: values.deckId,
-              },
-            },
+          // 3. Atualizar bloomLevel
+          await incrementBloomLevel({
+            client: tx,
+            userId: user?.id as string,
+            bloomLevel: flashcard.bloomLevel as string,
           });
 
-          await tx.studySession.deleteMany({
-            where: { deckId: values.deckId },
-          });
-
-          await tx.flashcard.updateMany({
-            where: {
-              deckId: values.deckId,
-            },
-            data: {
-              easeFactor: 2.5,
-              interval: 0,
-              repetition: 0,
-              lastReviewedAt: null,
-              nextReview: null,
-            },
-          });
-
-          const deck = await tx.deck.update({
-            where: { id: values.deckId },
-            data: {
-              reviewCount: 0,
-              lastStudiedAt: null,
-            },
-          });
-
+          // 4. Criar log de atividade
           await createActivity({
             userId: user?.id as string,
             type: "CREATE_FLASHCARD",
             client: tx,
           });
 
-          return deck;
+          return flashcard;
         });
 
         return c.json(
           {
             code: 201,
-            message: result
-              ? "Sua sessão atual foi reiniciada pois o deck foi atualizado."
-              : "Flashcard criado com sucesso!",
-            data: null,
+            message: "Flashcard criado com sucesso!",
+            data: result,
           },
           201
         );
-      } catch (error: any) {
+      } catch (error) {
         return handlePrismaError(c, error);
       }
     }
@@ -247,57 +215,16 @@ const app = new Hono<{
             })),
           });
 
-          await prisma.flashcardReview.deleteMany({
-            where: {
-              flashcard: {
-                deckId: values.deckId,
-              },
-            },
-          });
-
           await updateUserStats(user?.id!, {
             flashcardsCreated: { increment: generated.length },
           });
 
-          await prisma.studySession.deleteMany({
-            where: { deckId: values.deckId },
+          await incrementBloomLevel({
+            client: tx,
+            userId: user?.id as string,
+            bloomLevel: values.bloomLevel as string,
+            count: generated.length,
           });
-
-          await prisma.flashcard.updateMany({
-            where: {
-              deckId: values.deckId,
-            },
-            data: {
-              easeFactor: 2.5,
-              interval: 0,
-              repetition: 0,
-              lastReviewedAt: null,
-              nextReview: null,
-            },
-          });
-
-          await prisma.deck.update({
-            where: { id: values.deckId },
-            data: {
-              lastStudiedAt: null,
-              reviewCount: 0,
-            },
-          });
-
-          const activeSession = await prisma.studySession.findFirst({
-            where: {
-              deckId: values.deckId,
-              userId: user?.id,
-              completed: false,
-            },
-          });
-
-          if (activeSession) {
-            await prisma.studySession.update({
-              where: { id: activeSession.id },
-              data: { completed: true, endedAt: new Date() },
-            });
-          }
 
           await createActivity({
             userId: user?.id as string,
@@ -337,13 +264,10 @@ const app = new Hono<{
         await prisma.$transaction(async (tx) => {
           const flashcard = await tx.flashcard.findUnique({
             where: {
-              id: id,
+              id,
               userId: user?.id,
             },
             select: {
-              easeFactor: true,
-              interval: true,
-              repetition: true,
               deckId: true,
               bloomLevel: true,
             },
@@ -360,61 +284,45 @@ const app = new Hono<{
             );
           }
 
+          // buscar acertos e erros do flashcard
+          const reviews = await tx.flashcardReview.findMany({
+            where: { flashcardId: id },
+            select: {
+              grade: true, // exemplo: 1 = erro, 2 = acerto
+            },
+          });
+
+          const wrong = reviews.filter((r) => r.grade <= 1).length;
+          const correct = reviews.filter((r) => r.grade >= 3).length;
+
+          // remover somente as revisões desse flashcard
           await tx.flashcardReview.deleteMany({
-            where: {
-              flashcard: {
-                deckId: flashcard.deckId,
-              },
-            },
+            where: { flashcardId: id },
           });
 
-          await tx.deck.update({
-            where: {
-              id: flashcard?.deckId!,
-            },
-            data: {
-              reviewCount: 0,
-            },
-          });
-
+          // atualizar estatísticas do usuário
           await tx.userStats.update({
-            where: {
-              userId: user?.id,
-            },
+            where: { userId: user?.id },
             data: {
               flashcardsCreated: { decrement: 1 },
+              totalCorrectAnswers: { decrement: correct },
+              totalWrongAnswers: { decrement: wrong },
             },
           });
 
-          await tx.studySession.deleteMany({
-            where: { deckId: flashcard.deckId! },
-          });
-
-          await tx.flashcard.updateMany({
-            where: {
-              deckId: flashcard.deckId,
-            },
-            data: {
-              easeFactor: 2.5,
-              interval: 0,
-              repetition: 0,
-              lastReviewedAt: null,
-              nextReview: null,
-            },
-          });
-
+          // decrementa bloom level em userStats
           await decrementBloomLevel({
             userId: user?.id as string,
             client: tx,
-            bloomLevel: flashcard?.bloomLevel as $Enums.BloomLevel,
+            bloomLevel: flashcard.bloomLevel as string,
           });
 
+          // apagar o flashcard
           await tx.flashcard.delete({
-            where: {
-              id,
-            },
+            where: { id },
           });
 
+          // registrar atividade
           await createActivity({
             userId: user?.id as string,
             type: "DELETE_FLASHCARD",

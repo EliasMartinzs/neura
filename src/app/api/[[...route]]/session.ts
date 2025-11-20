@@ -3,6 +3,7 @@ import { authMiddleware } from "@/middlewares/auth-middleware";
 import { handlePrismaError } from "@/utils/handle-prisma-error";
 import { Hono } from "hono";
 import { AppVariables } from "./route";
+import { getBrasiliaDayRange } from "@/lib/helpers/get-brasilia-day-range";
 
 type Flashcard = {
   id: string;
@@ -56,20 +57,8 @@ const app = new Hono<{
       const user = c.get("user");
 
       const now = new Date();
-      const start = new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-      );
-      const end = new Date(
-        Date.UTC(
-          now.getUTCFullYear(),
-          now.getUTCMonth(),
-          now.getUTCDate(),
-          23,
-          59,
-          59,
-          999
-        )
-      );
+
+      const { start: startOfToday, end: endOfToday } = getBrasiliaDayRange(now);
 
       const result = await prisma.$transaction(async (tx) => {
         const stats = await prisma.userStats.findUnique({
@@ -89,9 +78,10 @@ const app = new Hono<{
           where: {
             userId: user?.id,
             nextReview: {
-              gte: start,
-              lte: end,
+              gte: startOfToday,
+              lte: endOfToday,
             },
+            deletedAt: null,
           },
           select: {
             id: true,
@@ -130,6 +120,28 @@ const app = new Hono<{
           message: null,
         },
         200
+      );
+    } catch (error) {
+      return handlePrismaError(c, error);
+    }
+  })
+  .post("/stats", async (c) => {
+    try {
+      const userId = c.get("user")?.id as string;
+
+      await prisma.userStats.create({
+        data: {
+          userId,
+        },
+      });
+
+      return c.json(
+        {
+          message: null,
+          data: null,
+          code: 201,
+        },
+        201
       );
     } catch (error) {
       return handlePrismaError(c, error);
