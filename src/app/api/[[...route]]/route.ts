@@ -17,10 +17,7 @@ const app = new Hono<{
 app.use(
   "*",
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://bandanaed-exemplarily-judi.ngrok-free.app",
-    ],
+    origin: ["http://localhost:3000"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     exposeHeaders: ["Set-Cookie"],
