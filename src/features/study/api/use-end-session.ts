@@ -21,6 +21,7 @@ export const useEndSession = () => {
     onSuccess: async ({ message }) => {
       queryClient.invalidateQueries({ queryKey: ["flashcards"] });
       queryClient.invalidateQueries({ queryKey: ["deck-by-id"] });
+      queryClient.invalidateQueries({ queryKey: ["reviews"] });
     },
     onError: ({ message }) => {
       toast.error(message);

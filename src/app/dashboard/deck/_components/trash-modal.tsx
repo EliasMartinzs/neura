@@ -15,9 +15,16 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { DIFFICULTY } from "@/constants/difficulty";
 import { useGetTrash } from "@/features/deck/api/use-get-trash";
 import { useRestoreDeck } from "@/features/deck/api/use-restore-deck";
 import { useTrashStore } from "@/features/deck/store/use-trash-store";
+import { DeckDifficulty } from "@prisma/client";
 import {
   ArchiveRestore,
   Calendar,
@@ -25,19 +32,10 @@ import {
   Loader2,
   LoaderCircle,
   Sparkles,
-  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DeleteAllDecksFromTrash } from "./delete-all-decks-from-trash";
-import { getForeground } from "@/constants/circle-colors";
-import { DIFFICULTY } from "@/constants/difficulty";
-import { DeckDifficulty } from "@prisma/client";
 import { PermanentDeleteButton } from "./permanent-delete-button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export const TrashModal = () => {
   const { open, onClose } = useTrashStore();

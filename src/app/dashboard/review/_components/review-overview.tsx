@@ -1,6 +1,7 @@
 import { ResponseUseGetReviews } from "@/features/study/api/use-get-reviews";
 import { usePageReviews } from "@/features/study/hooks/use-page-reviews";
 import { ReviewCard } from "./review-card";
+import { memo } from "react";
 
 type Flashcard = NonNullable<ResponseUseGetReviews>["data"];
 
@@ -8,7 +9,7 @@ type Props = {
   data: Flashcard;
 };
 
-export const ReviewOverview = ({ data }: Props) => {
+const ReviewOverviewComponent = ({ data }: Props) => {
   const { columns, formatDate, formatTime, getDaysUntil } = usePageReviews({
     data,
   });
@@ -25,16 +26,8 @@ export const ReviewOverview = ({ data }: Props) => {
                 {/* Header da coluna */}
                 <div className="sticky top-0 z-10 mb-4">
                   <div
-                    className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${column.bgGradient} border border-slate-700/50 backdrop-blur-xl p-4`}
+                    className={`relative overflow-hidden rounded-4xl p-6 dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border backdrop-blur-xl text-white`}
                   >
-                    {/* Glow effect */}
-                    <div
-                      className="absolute inset-0 opacity-20 blur-2xl"
-                      style={{
-                        background: `radial-gradient(circle at center, ${column.glowColor}, transparent)`,
-                      }}
-                    />
-
                     <div className="relative flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
@@ -44,9 +37,7 @@ export const ReviewOverview = ({ data }: Props) => {
                         </div>
                         <div>
                           <h3 className="font-bold text-lg">{column.title}</h3>
-                          <p className="text-muted-foreground text-xs">
-                            {column.subtitle}
-                          </p>
+                          <p className="text-xs">{column.subtitle}</p>
                         </div>
                       </div>
 
@@ -110,3 +101,6 @@ export const ReviewOverview = ({ data }: Props) => {
     </div>
   );
 };
+
+export const ReviewOverview = memo(ReviewOverviewComponent);
+ReviewOverview.displayName = "ReviewOverview";

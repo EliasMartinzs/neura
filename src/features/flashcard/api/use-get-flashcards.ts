@@ -30,7 +30,6 @@ export const useGetFlashcards = ({ deck, page, perPage }: Props) => {
 
       return await res.json();
     },
-    enabled: true,
     staleTime: Infinity,
   });
 

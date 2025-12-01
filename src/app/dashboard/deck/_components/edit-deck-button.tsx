@@ -1,7 +1,6 @@
 "use client";
 
 import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,32 +10,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { circleColors } from "@/constants/circle-colors";
 import { DIFFICULTY } from "@/constants/difficulty";
 import { useEditDeck } from "@/features/deck/api/use-edit-deck";
 import client from "@/lib/hc";
-import { cn } from "@/lib/utils";
 import { editDeckSchema, type EditDeckForm } from "@/schemas/edit-deck.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DeckDifficulty } from "@prisma/client";
 import { InferResponseType } from "hono";
 import {
-  Edit3,
+  Edit,
   FileText,
-  Loader2,
   Palette,
   Sparkles,
   Tag,
   Target,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { CirclePicker } from "react-color";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 type DeckResponse = InferResponseType<typeof client.api.deck.$get>;
@@ -45,9 +36,10 @@ type Deck = NonNullable<NonNullable<DeckResponse>["data"]>[number];
 
 type Props = {
   deck: Deck;
+  trigger?: React.ReactNode;
 };
 
-export const EditDeckButton = ({ deck }: Props) => {
+export const EditDeckButton = ({ deck, trigger }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -55,13 +47,13 @@ export const EditDeckButton = ({ deck }: Props) => {
       open={open}
       onOpenChange={setOpen}
       trigger={
-        <Button
-          size={"lg"}
-          variant="icon"
-          className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-blue-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
-        >
-          <Edit3 className="w-5 h-5 group-hover:text-green-100 " />
-        </Button>
+        trigger ? (
+          trigger
+        ) : (
+          <button className="flex items-center gap-x-3 hover:bg-accent w-full p-3 rounded-xl">
+            <Edit className="size-4" /> Editar
+          </button>
+        )
       }
       title=""
     >

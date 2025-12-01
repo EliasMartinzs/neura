@@ -14,6 +14,7 @@ export const useGetReviews = () => {
 
       return await res.json();
     },
+    staleTime: Infinity,
   });
 
   return query;

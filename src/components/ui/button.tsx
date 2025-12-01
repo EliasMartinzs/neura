@@ -26,6 +26,8 @@ const buttonVariants = cva(
         icon: "bg-background/20 backdrop-blur-md rounded-xl transition-colors duration-300 hover:scale-110 group/btn border border-white/30",
         gradient:
           "bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 text-white",
+        gradientLife:
+          "bg-linear-to-r from-primary via-blue-500 to-blue-400 text-white",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

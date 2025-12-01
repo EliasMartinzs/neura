@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Brain, LucideIcon } from "lucide-react";
 
 export const FlashcardEaseFactorCard = ({
@@ -15,7 +14,7 @@ export const FlashcardEaseFactorCard = ({
 }) => {
   const Icon = easeInfo.icon;
   return (
-    <Card className="backdrop-blur-sm">
+    <div className="backdrop-blur-sm overflow-hidden dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border rounded-4xl py-6 text-white">
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold  flex items-center gap-2">
@@ -35,11 +34,11 @@ export const FlashcardEaseFactorCard = ({
           <Badge className={`${easeInfo.color} bg-white/10 border-0`}>
             {easeInfo.label}
           </Badge>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs ">
             Indica como você retém este conteúdo. Maior = mais fácil de lembrar.
           </p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

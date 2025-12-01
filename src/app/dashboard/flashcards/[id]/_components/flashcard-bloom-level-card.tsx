@@ -1,5 +1,3 @@
-import { Card } from "@/components/ui/card";
-
 export const FlashcardBloomLevelCard = ({
   bloomLevel,
 }: {
@@ -10,7 +8,7 @@ export const FlashcardBloomLevelCard = ({
   };
 }) => {
   return (
-    <Card className="bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white backdrop-blur-sm">
+    <div className="backdrop-blur-sm overflow-hidden dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border rounded-4xl py-6 text-white">
       <div className="p-6 space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{bloomLevel.icon}</span>
@@ -20,6 +18,6 @@ export const FlashcardBloomLevelCard = ({
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

@@ -1,8 +1,5 @@
 import { openai } from "@/lib/openai";
-import {
-  createFlashcardGenerationForm,
-  createFlashcardGenerationSchema,
-} from "@/schemas/create-flashcard-generattion.schema";
+import { createFlashcardGenerationForm } from "@/schemas/create-flashcard-generattion.schema";
 import { z } from "zod";
 
 export const aiGeneratedFlashcardSchema = z.object({

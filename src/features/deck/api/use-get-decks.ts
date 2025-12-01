@@ -13,7 +13,7 @@ interface UseGetDecksProps {
 
 export const useGetDecks = ({ tags, page, perPage }: UseGetDecksProps = {}) => {
   const query = useQuery<ResponseGetDecks, Error>({
-    queryKey: ["deck", { tags, page, perPage }],
+    queryKey: ["deck", tags, page, perPage],
     queryFn: async () => {
       const res = await client.api.deck.$get({
         query: {
@@ -29,7 +29,6 @@ export const useGetDecks = ({ tags, page, perPage }: UseGetDecksProps = {}) => {
 
       return res.json();
     },
-    enabled: true,
     staleTime: Infinity,
   });
 

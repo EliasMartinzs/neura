@@ -25,6 +25,7 @@ export const useGetDeckNames = ({ hasFlashcard }: Props) => {
 
       return await res.json();
     },
+    staleTime: Infinity,
   });
 
   return query;

@@ -9,17 +9,22 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
-  Book,
+  Baby,
   Brain,
+  CheckCircle2,
   FileText,
+  Flame,
+  Gauge,
   HelpCircle,
   Layout,
   Lightbulb,
   Loader2,
   Palette,
   Plus,
+  Skull,
   Sparkles,
   Tag,
+  Target,
   Zap,
 } from "lucide-react";
 
@@ -33,12 +38,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { bloomLevels } from "@/constants/bloom-level";
-import { circleColors } from "@/constants/circle-colors";
+import { circleColors, getForeground } from "@/constants/circle-colors";
 import { FlashcardDifficulty } from "@/constants/flashcard-difficulty";
 import { cn } from "@/lib/utils";
 import { CreateFlashcardForm } from "@/schemas/create-flashcard.schema";
+import { $Enums } from "@prisma/client";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
+
+const difficulties = [
+  {
+    value: "VERY_EASY",
+    label: "Muito Fácil",
+    icon: <Sparkles className="size-5 text-green-300" />,
+    desc: "Conceitos introdutórios",
+  },
+  {
+    value: "EASY",
+    label: "Fácil",
+    icon: <Baby className="size-5 text-green-500" />,
+    desc: "Conceitos básicos",
+  },
+  {
+    value: "MEDIUM",
+    label: "Médio",
+    icon: <Gauge className="size-5 text-orange-500" />,
+    desc: "Conhecimento intermediário",
+  },
+  {
+    value: "HARD",
+    label: "Difícil",
+    icon: <Flame className="size-5 text-red-500" />,
+    desc: "Desafios avançados",
+  },
+  {
+    value: "VERY_HARD",
+    label: "Muito Difícil",
+    icon: <Skull className="size-5 text-rose-600" />,
+    desc: "Domínio profundo e extremamente complexo",
+  },
+];
 
 export const FlashcardForm = ({
   close,
@@ -54,6 +94,7 @@ export const FlashcardForm = ({
         id: string;
         name: string;
         color: string | null;
+        difficulty: $Enums.DeckDifficulty | null;
         _count: {
           flashcards: number;
         };
@@ -65,6 +106,7 @@ export const FlashcardForm = ({
   isLoadingDeckNames: boolean;
   deckId?: string;
 }) => {
+  const [searchTerm, setSearchTerm] = useState("");
   const { step, nextStep, prevStep, form } = useCreateFlashcardForm({ deckId });
 
   const { mutate, isPending } = useCreateFlashcard();
@@ -134,41 +176,82 @@ export const FlashcardForm = ({
                   ) : !decks ? (
                     <div>Houve um erro, tente novamente</div>
                   ) : (
-                    <div className="space-y-4 max-h-[70svh] mt-6">
+                    <div className="max-h-[30dvh] overflow-y-auto space-y-6">
+                      <Input
+                        placeholder="Buscar deck..."
+                        value={searchTerm}
+                        onChange={(e) =>
+                          setSearchTerm(e.target.value.toLowerCase())
+                        }
+                      />
                       <div
                         className={cn("grid grid-cols-1 md:grid-cols-2 gap-4")}
                       >
-                        {decks.map((deck) => (
-                          <Card
-                            key={deck.id}
-                            style={{
-                              background: `linear-gradient(135deg, ${deck.color}33, ${deck.color}88)`,
-                            }}
-                            className="min-w-52"
-                            onClick={() => {
-                              field.onChange(deck.id);
-                              nextStep();
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = deck.color!;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = `linear-gradient(135deg, ${deck.color}33, ${deck.color}88)`;
-                            }}
-                          >
-                            <CardHeader>
-                              <CardTitle className="capitalize">
-                                {deck.name}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="flex items-center gap-x-3">
-                                <Book className="size-5" />{" "}
-                                {Number(deck._count.flashcards)} cards
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                        {decks
+                          .filter((d) =>
+                            d.name.toLowerCase().includes(searchTerm)
+                          )
+                          .map((deck) => (
+                            <Card
+                              key={deck.id}
+                              className="hover:scale-97 transition-transform transform duration-500"
+                              onClick={() => {
+                                field.onChange(deck.id);
+                                nextStep();
+                              }}
+                              style={{
+                                backgroundColor: deck.color || "",
+                                color: getForeground(deck.color || ""),
+                              }}
+                            >
+                              <CardHeader>
+                                <CardTitle className="bg-white/15 backdrop-blur-md rounded-xl p-5 border border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300">
+                                  <h2 className="text-xl font-bold text-center leading-relaxed capitalize line-clamp-1">
+                                    {deck.name}
+                                  </h2>
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="flex items-center justify-center gap-3 mt-4 bg-white/10 rounded-lg p-3">
+                                  <div className="flex gap-1">
+                                    {[
+                                      "VERY_EASY",
+                                      "EASY",
+                                      "MEDIUM",
+                                      "HARD",
+                                      "VERY_HARD",
+                                    ].map((level, index) => {
+                                      const isActive =
+                                        [
+                                          "VERY_EASY",
+                                          "EASY",
+                                          "MEDIUM",
+                                          "HARD",
+                                          "VERY_HARD",
+                                        ].indexOf(
+                                          deck.difficulty as $Enums.DeckDifficulty
+                                        ) >= index;
+                                      return (
+                                        <div
+                                          key={level}
+                                          className={`w-1.5 h-5 rounded-full transition-all duration-300 ${
+                                            isActive
+                                              ? "bg-linear-to-t from-yellow-400 to-yellow-200 shadow-lg"
+                                              : "bg-white/20"
+                                          }`}
+                                        ></div>
+                                      );
+                                    })}
+                                  </div>
+                                  <span className=" text-sm font-semibold">
+                                    {FlashcardDifficulty[
+                                      deck.difficulty as $Enums.DeckDifficulty
+                                    ].label || deck.difficulty}
+                                  </span>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
                       </div>
                     </div>
                   )}
@@ -242,58 +325,52 @@ export const FlashcardForm = ({
         )}
 
         {step === 3 && (
+          <FormField
+            control={form.control}
+            name="difficulty"
+            render={({ field }) => (
+              <FormItem className="bg-slate-50 dark:bg-transparent backdrop-blur-xl rounded-4xl p-6 border border-white/10 flex flex-col">
+                <FormLabel className="font-bold flex items-center gap-2">
+                  <Target className="size-5 text-blue-400" />
+                  Dificuldade
+                </FormLabel>
+                <FormControl>
+                  <div className="space-y-2">
+                    {difficulties.map((diff) => (
+                      <button
+                        key={diff.value}
+                        className={`w-full p-4 rounded-xl text-left transition-all ${
+                          field.value === diff.value
+                            ? "bg-linear-to-r from-blue-500/20 to-purple-500/20 border-2 border-blue-500"
+                            : "bg-white/5 border border-white/10 hover:bg-white/10"
+                        }`}
+                        onClick={() => field.onChange(diff.value)}
+                        type="button"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{diff.icon}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold">{diff.label}</p>
+                            <p className="text-xs text-slate-400">
+                              {diff.desc}
+                            </p>
+                          </div>
+                          {field.value === diff.value && (
+                            <CheckCircle2 className="size-5 text-blue-400" />
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {step === 4 && (
           <>
-            <FormField
-              control={form.control}
-              name="difficulty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-x-3">
-                    <Zap className="size-5 text-primary" />
-
-                    <span>Dificuldade</span>
-                    <Tooltip
-                      content="Selecione o nível de dificuldade da pergunta. Escolha o quanto ela parece fácil ou desafiadora para você."
-                      trigger={
-                        <HelpCircle className="size-5 hover:text-foreground duration-200 ease-in transition-colors" />
-                      }
-                    />
-                  </FormLabel>
-                  <FormControl>
-                    <div className="flex flex-wrap gap-4">
-                      {Object.entries(FlashcardDifficulty).map(
-                        ([key, value]) => {
-                          const Icon = value.icon;
-
-                          return (
-                            <div
-                              key={key}
-                              className={cn(
-                                "flex items-center gap-x-2 border p-2 rounded-xl group duration-200 ease-in transition-all shadow hover:outline",
-                                form.watch("difficulty") === key &&
-                                  "bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 text-white"
-                              )}
-                              onClick={() => field.onChange(key)}
-                            >
-                              <Icon
-                                className={cn(
-                                  "text-primary size-5",
-                                  form.watch("difficulty") === key &&
-                                    "text-primary-foreground"
-                                )}
-                              />{" "}
-                              {value.label}
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="bloomLevel"
@@ -501,28 +578,31 @@ export const FlashcardForm = ({
               className="flex items-center gap-2  hover:transition-all mb-6 group px-4 py-2 rounded-xl hover:bg-white/5"
               onClick={prevStep}
               disabled={step === 2 && deckId ? true : false}
+              type="button"
             >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-2 transition-transform duration-300" />
               <span className="font-medium">Voltar</span>
             </Button>
           )}
-          {step > 1 && step < 3 && (
+          {step > 1 && step < 4 && (
             <Button
               variant={"outline"}
               size={"lg"}
               className="flex items-center gap-2  hover:transition-all mb-6 group px-4 py-2 rounded-xl hover:bg-white/5"
               onClick={nextStep}
+              type="button"
             >
               <span className="font-medium">Próximo</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
             </Button>
           )}
-          {step === 3 && (
+          {step === 4 && (
             <Button
               variant={"outline"}
               size={"lg"}
               className="flex items-center gap-2  hover:transition-all mb-6 group px-4 py-2 rounded-xl hover:bg-white/5"
               onClick={nextStep}
+              type="submit"
             >
               {isLoading ? (
                 <Sparkles className="w-5 h-5 transition-transform duration-300 animate-pulse" />

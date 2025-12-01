@@ -7,6 +7,7 @@ import { getCloudinaryPublicId } from "@/lib/utils";
 import { CldUploadWidget } from "next-cloudinary";
 
 import { ImagePlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const ChangeImageProfile = ({ user }: { user: User }) => {
   const { mutate: mutateEditProfile } = useEditProfile();
@@ -34,7 +35,7 @@ export const ChangeImageProfile = ({ user }: { user: User }) => {
   }
 
   return (
-    <div className="flex flex-row items-center justify-center gap-x-2">
+    <div className="flex flex-row items-center justify-center gap-x-2 text-white">
       <CldUploadWidget
         uploadPreset="neura-preset"
         onSuccess={handleUpload}
@@ -48,13 +49,13 @@ export const ChangeImageProfile = ({ user }: { user: User }) => {
         }}
       >
         {({ open }) => (
-          <button
+          <Button
             onClick={() => open?.()}
             className="mt-6 px-8 py-3 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 inline-flex items-center gap-2"
           >
             <ImagePlus className="w-4 h-4" />
             Nova foto
-          </button>
+          </Button>
         )}
       </CldUploadWidget>
 

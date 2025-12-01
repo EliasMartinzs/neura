@@ -1,12 +1,10 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
 import prisma from "./db";
 import { sendEmail } from "./mailer";
-import { verifyEmailTemplate } from "./templates/verify-email";
-import { nextCookies } from "better-auth/next-js";
 import { resetPasswordTemplate } from "./templates/reset-password-template";
-import { createAuthMiddleware } from "better-auth/api";
-import client from "./hc";
+import { verifyEmailTemplate } from "./templates/verify-email";
 
 export const auth = betterAuth({
   user: {

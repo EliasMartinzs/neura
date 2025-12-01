@@ -1,17 +1,21 @@
 import Image from "next/image";
 
-export const EmptyState = () => {
+export const EmptyState = ({
+  message = "Continue usando a plataforma para exibirmos seus dados.",
+}: {
+  message?: string;
+}) => {
   return (
-    <div className="fixed inset-0 left-0 -z-50 flex items-center justify-center flex-col gap-6">
+    <div className="flex flex-col items-center justify-center p-6 sm:p-10 max-w-md mx-auto text-center my-24">
       <Image
         src="/undraw_no-data.svg"
-        alt="no-data"
+        alt="No data"
         width={160}
         height={160}
-        className="object-center object-cover"
+        className="mb-4 object-contain"
       />
 
-      <p>Continue usando a plataforma para exibirmos seus dados</p>
+      <p className="w-full">{message}</p>
     </div>
   );
 };

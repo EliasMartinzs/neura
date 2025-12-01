@@ -103,18 +103,8 @@ function StatsWidgetComponent({ userStats }: Props) {
               >
                 {/* Card */}
                 <div
-                  className={`relative h-full rounded-4xl bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 border ${stat.borderColor} backdrop-blur-xl transition-all duration-500 hover:scale-101`}
+                  className={`relative h-full rounded-4xl bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 border ${stat.borderColor} backdrop-blur-xl transition-all duration-500 hover:scale-[0.99]`}
                 >
-                  {/* Efeito de brilho */}
-                  <div
-                    className={`absolute inset-0 bg-linear-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-2xl`}
-                  />
-
-                  {/* Partícula decorativa */}
-                  <div
-                    className={`absolute top-0 right-0 w-32 h-32 bg-linear-to-br ${stat.color} opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl`}
-                  />
-
                   {/* Conteúdo */}
                   <div className="relative p-6 space-y-4">
                     {/* Header com ícone */}
@@ -149,8 +139,8 @@ function StatsWidgetComponent({ userStats }: Props) {
                         className={cn(
                           " text-white transition-all duration-700 mb-2",
                           stat.value === "Nenhum registro até o momento"
-                            ? "text-lg"
-                            : "text-5xl"
+                            ? "text-md"
+                            : "text-2xl"
                         )}
                         style={{
                           filter: "drop-shadow(0 0 10px rgba(255,255,255,0.2))",
@@ -170,23 +160,18 @@ function StatsWidgetComponent({ userStats }: Props) {
                       {stat.link ? (
                         <a
                           href={stat.link}
-                          className={`text-lg font-semibold text-slate-300 hover:${stat.textColor} transition-colors duration-300 flex items-center gap-2 group/link`}
+                          className={`text-md font-semibold text-slate-300 hover:${stat.textColor} transition-colors duration-300 flex items-center gap-2 group/link`}
                         >
                           {stat.label}
                           <Zap className="w-4 h-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
                         </a>
                       ) : (
-                        <p className="text-lg font-semibold text-slate-300">
+                        <p className="text-md font-semibold text-slate-300">
                           {stat.label}
                         </p>
                       )}
                     </div>
                   </div>
-
-                  {/* Borda animada no hover */}
-                  <div
-                    className={`absolute inset-0 rounded-2xl bg-linear-to-r ${stat.color} opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-500 -z-10`}
-                  />
                 </div>
               </div>
             );

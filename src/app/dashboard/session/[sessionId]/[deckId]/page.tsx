@@ -27,7 +27,6 @@ export default function SessionPage() {
     <QueryState
       query={query}
       loading={<LoadingState />}
-      empty={<EmptyState />}
       error={({ refetch }) => <ErrorState onRetry={refetch} />}
       fetchingIndicator={<FetchingIndicatorState />}
     >

@@ -20,9 +20,7 @@ export const useGenerateFlashcard = () => {
 
       return await res.json();
     },
-    onSuccess: async ({ message }) => {
-      toast.success(message);
-
+    onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["flashcards"] }),
         queryClient.invalidateQueries({ queryKey: ["deck"] }),
@@ -32,6 +30,7 @@ export const useGenerateFlashcard = () => {
     onError: ({ message }) => {
       toast.error(message);
     },
+    gcTime: 1000 * 60 * 5,
   });
 
   return mutation;

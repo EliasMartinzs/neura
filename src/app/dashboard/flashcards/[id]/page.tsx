@@ -13,6 +13,7 @@ import { BreadcrumbCustom } from "@/components/shared/breadcrumb-custom";
 import { FlashcardDetail } from "@/components/shared/flashcard-detail";
 import { EmptyState } from "@/lib/query/empty-state";
 import { ErrorState } from "@/lib/query/error-state";
+import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 import { LoadingState } from "@/lib/query/loading-state";
 import { QueryState } from "@/lib/query/query-state";
 import { BloomLevel } from "@prisma/client";
@@ -21,7 +22,6 @@ import { FlashcardEaseFactorCard } from "./_components/flashcard-ease-factor-car
 import { FlashcardHeaderCard } from "./_components/flashcard-header-card";
 import { FlashcardPerformanceCard } from "./_components/flashcard-perfomance-card";
 import { FlashcardReviewScheduleCard } from "./_components/flashcard-review-schedule-card";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 
 type Flashcard = NonNullable<ResponseFlashcard>["data"];
 
@@ -38,7 +38,6 @@ export default function Flashcard() {
         query={query}
         loading={<LoadingState />}
         error={({ refetch }) => <ErrorState onRetry={refetch} />}
-        empty={<EmptyState />}
         fetchingIndicator={<FetchingIndicatorState />}
       >
         {(data) => {

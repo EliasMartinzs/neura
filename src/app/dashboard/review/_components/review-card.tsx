@@ -5,6 +5,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  LucideIcon,
   Target,
   TrendingUp,
 } from "lucide-react";
@@ -14,9 +15,25 @@ type Card = NonNullable<
   NonNullable<ResponseUseGetReviews>["data"]
 >["today"][number];
 
+type Column = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+  count: number;
+  cards: any;
+  gradient: string;
+  bgGradient: string;
+  glowColor: string;
+  iconColor: string;
+  countBg: string;
+  countBorder: string;
+  countText: string;
+};
+
 type Props = {
   card: Card;
-  column: any;
+  column: Column;
   index: number;
   formatDate: (d: string) => string;
   formatTime: (d: string) => string;
@@ -40,12 +57,12 @@ const ReviewCardComponent = ({
       style={{ animation: `cardSlideIn 0.4s ease-out ${index * 0.05}s both` }}
     >
       <div
-        className={`relative rounded-b-4xl bg-linear-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 backdrop-blur-xl p-4 transition-all duration-300 hover:scale-[0.99] hover:border-slate-600 cursor-pointer`}
+        className={`relative rounded-4xl border-t-8 dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 backdrop-blur-xl p-4 transition-all duration-300 cursor-pointer`}
+        style={{
+          borderTopColor: column.countBorder,
+        }}
       >
         {/* Borda superior colorida */}
-        <div
-          className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${column.gradient} rounded-t-4xl`}
-        />
 
         <div className="space-y-3">
           {/* Header do card */}

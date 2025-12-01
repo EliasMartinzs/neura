@@ -36,7 +36,8 @@ export function useCreateFlashcardForm({ deckId }: { deckId?: string }) {
   const stepFields: Record<number, (keyof CreateFlashcardForm)[]> = {
     1: ["deckId"],
     2: ["front", "back"],
-    3: ["topic", "subtopic", "difficulty", "bloomLevel", "note", "color"],
+    3: ["difficulty"],
+    4: ["topic", "subtopic", "bloomLevel", "note", "color"],
   };
 
   /** Valida apenas os campos do passo atual */
@@ -55,7 +56,7 @@ export function useCreateFlashcardForm({ deckId }: { deckId?: string }) {
   const nextStep = async () => {
     const valid = await validateStep();
     if (!valid) return false;
-    setStep((prev) => Math.min(prev + 1, 3));
+    setStep((prev) => Math.min(prev + 1, 4));
     return true;
   };
 
@@ -68,6 +69,6 @@ export function useCreateFlashcardForm({ deckId }: { deckId?: string }) {
     nextStep,
     prevStep,
     stepFields,
-    isLastStep: step === 3,
+    isLastStep: step === 4,
   };
 }

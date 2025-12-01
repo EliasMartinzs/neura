@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -69,10 +70,10 @@ export const AvatarsButton = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button className="mt-6 px-8 py-3 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 inline-flex items-center gap-2">
+        <Button className="mt-6 px-8 py-3 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 inline-flex items-center gap-2">
           <UserRoundPen className="w-4 h-4" />
           Novo avatar
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="space-y-6">
         <DialogHeader>

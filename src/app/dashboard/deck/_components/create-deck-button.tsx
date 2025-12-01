@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +6,7 @@ import { Plus, Sparkles } from "lucide-react";
 
 import { ResponsiveDialog } from "@/components/shared/responsive-dialog";
 
+import { Tooltip } from "@/components/shared/tooltip";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DeckForm } from "./deck-form";
 
@@ -33,8 +32,11 @@ export const CreateDeckButton = () => {
         router.replace(newUrl);
       }}
       trigger={
-        <Button variant="outline" className="">
-          Novo deck <Plus className="w-5 h-5" />
+        <Button variant="ghost">
+          <Tooltip
+            trigger={<Plus className="size-5" />}
+            content={<p className="text-sm">Criar novo deck</p>}
+          />
         </Button>
       }
       title=""

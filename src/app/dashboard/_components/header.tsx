@@ -30,7 +30,7 @@ export const Header = () => {
 
         <MenuMobile open={open} setOpen={setOpen} />
 
-        <div className="max-lg:hidden border rounded-full shadow p-2">
+        <div className="max-lg:hidden">
           <div className="flex items-center gap-8 p-4">
             {linksHeader.map(({ href, icon, id, label }) => {
               const Icon = icon;

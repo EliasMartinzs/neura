@@ -1,3 +1,4 @@
+import { Title } from "@/components/shared/title";
 import { cn } from "@/lib/utils";
 import { Award, Sparkles, Target, TrendingUp } from "lucide-react";
 import { memo, useMemo } from "react";
@@ -75,9 +76,7 @@ function AccuracyWidgetComponent({
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2 flex-1">
               <div className="flex items-center gap-3">
-                <h2 className="text-3xl font-bold bg-linear-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-                  Desempenho Médio
-                </h2>
+                <Title>Desempenho Médio</Title>
                 <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
               </div>
               <p className="text-slate-400 text-base">

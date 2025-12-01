@@ -38,7 +38,6 @@ export default function DeckPage() {
         query={query}
         loading={<LoadingState />}
         error={({ refetch }) => <ErrorState onRetry={refetch} />}
-        empty={<EmptyState />}
         fetchingIndicator={<FetchingIndicatorState />}
       >
         {(data) => {

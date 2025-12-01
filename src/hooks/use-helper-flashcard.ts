@@ -135,14 +135,14 @@ export const useHelperFlashcard = (flashcard: Flashcard) => {
 
   const getEaseFactorInfo = (factor: number) => {
     if (factor >= 2.5)
-      return { label: "Excelente", color: "text-emerald-600", icon: Star };
+      return { label: "Excelente", color: "text-emerald-300", icon: Star };
     if (factor >= 2.0)
-      return { label: "Bom", color: "text-blue-600", icon: ThumbsUp };
+      return { label: "Bom", color: "text-blue-300", icon: ThumbsUp };
     if (factor >= 1.5)
-      return { label: "Regular", color: "text-amber-600", icon: Book };
+      return { label: "Regular", color: "text-amber-300", icon: Book };
     return {
       label: "Precisa Revisar",
-      color: "text-rose-600",
+      color: "text-rose-300",
       icon: AlertCircle,
     };
   };
@@ -151,16 +151,16 @@ export const useHelperFlashcard = (flashcard: Flashcard) => {
     if (avg >= 80)
       return {
         label: "Excelente",
-        color: "text-emerald-600",
+        color: "text-emerald-300",
         bg: "bg-emerald-500",
       };
     if (avg >= 60)
-      return { label: "Bom", color: "text-blue-600", bg: "bg-blue-500" };
+      return { label: "Bom", color: "text-blue-300", bg: "bg-blue-500" };
     if (avg >= 40)
-      return { label: "Regular", color: "text-amber-600", bg: "bg-amber-500" };
+      return { label: "Regular", color: "text-amber-300", bg: "bg-amber-500" };
     return {
       label: "Precisa Melhorar",
-      color: "text-rose-600",
+      color: "text-rose-300",
       bg: "bg-rose-500",
     };
   };

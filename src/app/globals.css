@@ -60,7 +60,7 @@
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
+  --border: oklch(0% 0 0 / 0.22);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.702 0.183 293.541);
   --chart-1: oklch(0.811 0.111 293.571);
@@ -117,7 +117,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply text-foreground bg-background;
+    @apply text-foreground;
   }
 }
 
@@ -128,30 +128,4 @@
 
 *::-webkit-scrollbar {
   display: none; /* Chrome, Safari e Edge */
-}
-
-.background {
-  background: linear-gradient(
-    205deg,
-    rgba(127, 34, 254, 0.2) 0%,
-    rgba(127, 34, 254, 0.01) 100%
-  );
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  min-height: 100vh;
-  width: 100%;
-}
-
-.fade-blur {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    /* topo invisível */ rgba(0, 0, 0, 1) 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.1) 0%,
-    rgba(0, 0, 0, 1) 100%
-  );
 }

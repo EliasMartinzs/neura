@@ -9,16 +9,19 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Edit,
   Flame,
   Play,
   Plus,
   RotateCcw,
   Tag,
   Target,
+  Trash,
   Trophy,
 } from "lucide-react";
 import { EditDeckButton } from "../../_components/edit-deck-button";
 import { MoveTrashButton } from "../../_components/move-trash-button";
+import { getForeground } from "@/constants/circle-colors";
 
 type Deck = NonNullable<NonNullable<ResponseGetDecks>["data"]>[number];
 
@@ -65,36 +68,9 @@ export const DeckCard = ({
         style={{
           background:
             color || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: getForeground(color || ""),
         }}
       >
-        {/* Decoration and Animations Flashcard */}
-        <>
-          <div className="absolute inset-0 bg-linear-to-br from-white/10 via-transparent to-black/20"></div>
-          <div
-            className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-br-full animate-pulse"
-            style={{ animationDuration: "4s" }}
-          ></div>
-          <div
-            className="absolute bottom-0 right-0 w-64 h-64 bg-black/10 rounded-tl-full animate-pulse"
-            style={{ animationDuration: "5s" }}
-          ></div>
-
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-2 h-2 bg-white/30 rounded-full animate-ping"
-                style={{
-                  top: `${Math.random() * 100}%`,
-                  left: `${Math.random() * 100}%`,
-                  animationDelay: `${i * 0.5}s`,
-                  animationDuration: "3s",
-                }}
-              ></div>
-            ))}
-          </div>
-        </>
-
         <div className="relative p-6 md:p-10">
           {/* Actions Buttons */}
           <div className="absolute top-6 right-6 flex items-center gap-2">
@@ -122,9 +98,30 @@ export const DeckCard = ({
                 id,
                 reviewCount,
               }}
+              trigger={
+                <Button
+                  size={"lg"}
+                  variant="icon"
+                  className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
+                >
+                  <Edit className="w-5 h-5 group-hover:text-green-100 " />
+                </Button>
+              }
             />
 
-            <MoveTrashButton id={id} redirect="/dashboard/deck" />
+            <MoveTrashButton
+              id={id}
+              redirect="/dashboard/deck"
+              trigger={
+                <Button
+                  size={"lg"}
+                  variant="icon"
+                  className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
+                >
+                  <Trash className="w-5 h-5 group-hover:text-green-100 " />
+                </Button>
+              }
+            />
 
             <CreateFlashcardButton
               deckId={id}

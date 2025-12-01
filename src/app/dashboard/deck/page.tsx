@@ -3,52 +3,70 @@
 import { PaginationComponent } from "@/components/shared/pagination-component";
 import { Title } from "@/components/shared/title";
 import { useGetDecks } from "@/features/deck/api/use-get-decks";
-import { useDeckFiltersStore } from "@/features/deck/store/use-deck-filters-store";
 import { EmptyState } from "@/lib/query/empty-state";
 import { ErrorState } from "@/lib/query/error-state";
+import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 import { LoadingState } from "@/lib/query/loading-state";
 import { QueryState } from "@/lib/query/query-state";
-import { CreateDeckButton } from "./_components/create-deck-button";
-import { DeckFilters } from "./_components/deck-filters";
+import { useSearchParams } from "next/navigation";
+import { DeckToolbar } from "./_components/deck-toolbar";
 import { Decks } from "./_components/decks";
+import { DeckDocumentation } from "./_components/deck-documentation";
+import { useDeckFilterStore } from "@/features/deck/store/use-deck-filter-store";
 import { Suspense } from "react";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 
 export default function DeckPage() {
-  const { tags, page, perPage, setPage } = useDeckFiltersStore();
+  const searchParams = useSearchParams();
+  const searchTerm = searchParams.get("q");
+  const { tags, page, perPage, setPage } = useDeckFilterStore();
 
   const query = useGetDecks({
     page,
     perPage,
     tags: tags.length > 0 ? tags : undefined,
   });
-
+  console.log(query.data);
   return (
-    <main className="space-y-6">
-      <Suspense>
-        <Title action={<CreateDeckButton />}>Meus decks</Title>
-      </Suspense>
+    <main className="space-y-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
+        <Title>Decks</Title>
+        <Suspense fallback={null}>
+          <DeckToolbar />
+        </Suspense>
+      </div>
 
-      <DeckFilters />
+      <DeckDocumentation />
 
       <QueryState
         query={query}
         loading={<LoadingState />}
         error={({ refetch }) => <ErrorState onRetry={refetch} />}
         fetchingIndicator={<FetchingIndicatorState />}
-        empty={<EmptyState />}
       >
-        {(data) => (
-          <>
-            <Decks decks={data?.data} />
+        {(data) => {
+          const filteredDecks = data?.data?.filter((deck) => {
+            const matchesSearch = deck.name
+              .toLowerCase()
+              .includes(searchTerm ? searchTerm.toLowerCase() : "");
+            return matchesSearch;
+          });
 
-            <PaginationComponent
-              page={page}
-              totalPages={"totalPages" in data ? data.totalPages : 0}
-              setPage={setPage}
-            />
-          </>
-        )}
+          const totalPage = "totalPages" in data ? data.totalPages : 0;
+
+          return (
+            <>
+              <Decks decks={filteredDecks} />
+
+              {data.data?.length ? (
+                <PaginationComponent
+                  page={page}
+                  setPage={setPage}
+                  totalPages={totalPage}
+                />
+              ) : null}
+            </>
+          );
+        }}
       </QueryState>
     </main>
   );

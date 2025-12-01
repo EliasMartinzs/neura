@@ -1,12 +1,9 @@
 generator client {
-  provider      = "prisma-client-js"
-  engineType    = "node-api"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum DeckDifficulty {
@@ -54,7 +51,53 @@ enum ActivityType {
   STUDY_SESSION_STARTED
   STUDY_SESSION_COMPLETED
 
+  CREATE_QUIZ
+  ANSWER_QUIZ
+  DELETE_QUIZ
+
+  CREATE_OPEN_QUESTION
+  ANSWER_OPEN_QUESTION
+  DELETE_OPEN_QUESTION
+
   OTHER
+}
+
+enum OpenStudyStatus {
+  COMPLETED
+  PENDING
+}
+
+enum QuizDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuizStyle {
+  DIRECT
+  REAL_SCENARIO
+  TRICKY
+  EXAM_LEVEL
+}
+
+enum ExplanationType {
+  SHORT
+  DETAILED
+  ANALOGY
+  PRACTICAL
+}
+
+enum QuizStepType {
+  CONCEPT
+  EXAMPLE
+  COMPARISON
+  APPLICATION
+}
+
+enum QuizStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
 }
 
 model User {
@@ -69,15 +112,18 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  sessions        Session[]
-  accounts        Account[]
-  decks           Deck[]
-  flashcards      Flashcard[]
-  reminders       Reminder[]
-  aIGeneratedCard AIGeneratedCard[]
-  userStats       UserStats?
-  studySessions   StudySession[]
-  activityLogs    ActivityLog[]
+  sessions             Session[]
+  accounts             Account[]
+  decks                Deck[]
+  flashcards           Flashcard[]
+  reminders            Reminder[]
+  aIGeneratedCard      AIGeneratedCard[]
+  userStats            UserStats?
+  studySessions        StudySession[]
+  activityLogs         ActivityLog[]
+  openStudySessions    OpenStudySession[]
+  quizSessions         QuizSession[]
+  dailyStudyActivities DailyStudyActivity[]
 }
 
 model Session {
@@ -134,11 +180,24 @@ model UserStats {
   lastStudyAt           DateTime?
   mostStudiedCategories Json[]
   mostStudiedBloomLevel Json[]
+  openStudyCount        Int       @default(0)
+  openScoreSum          Int       @default(0)
+  openAverageScore      Float     @default(0.0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("user_stats")
+}
+
+model DailyStudyActivity {
+  id     String   @id @default(cuid())
+  userId String
+  date   DateTime @db.Date
+  count  Int      @default(0) // quantas ações de estudo foram feitas no dia
+  user   User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
 }
 
 model Deck {
@@ -295,6 +354,41 @@ model SessionFlashcard {
   @@index([flashcardId])
 }
 
+model OpenStudySession {
+  id          String             @id @default(cuid())
+  userId      String
+  topic       String
+  createdAt   DateTime           @default(now())
+  completedAt DateTime?
+  status      OpenStudyStatus    @default(PENDING)
+  user        User               @relation(fields: [userId], references: [id])
+  question    OpenQuestion?
+  attempt     OpenAnswerAttempt?
+}
+
+model OpenQuestion {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  content     String // a pergunta gerada pela IA
+  idealAnswer String? // resposta modelo da IA (opcional)
+  difficulty  String? // easy / medium / hard
+  createdAt   DateTime @default(now())
+
+  session OpenStudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model OpenAnswerAttempt {
+  id            String   @id @default(cuid())
+  sessionId     String   @unique
+  userAnswer    String // texto do usuário
+  score         Int // 0–100
+  feedback      String // feedback da IA
+  missingPoints String? // itens faltantes
+  createdAt     DateTime @default(now())
+
+  session OpenStudySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
 model Reminder {
   id        String   @id @default(cuid())
   userId    String
@@ -306,4 +400,75 @@ model Reminder {
   updatedAt DateTime @updatedAt
 
   @@map("reminder")
+}
+
+model QuizSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  topic           String
+  subtopic        String?
+  difficulty      QuizDifficulty
+  style           QuizStyle
+  explanationType ExplanationType
+  status          QuizStatus      @default(ABANDONED)
+
+  mode String @default("EVOLUTION") // sempre modo evolução
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  steps QuizStep[]
+}
+
+model QuizStep {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   QuizSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  stepType QuizStepType // conceito → exemplo → comparação → aplicação
+  question QuizQuestion?
+
+  userAnswerId String?
+  userAnswer   QuizOption? @relation("UserAnswer", fields: [userAnswerId], references: [id], onDelete: Cascade)
+  answeredAt   DateTime?
+  isCorrect    Boolean?
+
+  createdAt DateTime?
+}
+
+model QuizQuestion {
+  id     String   @id @default(cuid())
+  stepId String   @unique
+  step   QuizStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  content String // texto da pergunta
+
+  options     QuizOption[]
+  explanation QuizExplanation?
+}
+
+model QuizOption {
+  id         String       @id @default(cuid())
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  text      String
+  isCorrect Boolean @default(false)
+
+  // usado para ligar a resposta do usuário
+  QuizStep QuizStep[] @relation("UserAnswer")
+}
+
+model QuizExplanation {
+  id         String       @id @default(cuid())
+  questionId String       @unique
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  text String // explicação da IA
+  type ExplanationType
+
+  createdAt DateTime @default(now())
 }

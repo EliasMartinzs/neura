@@ -18,9 +18,9 @@ export const DeckSearchedFlashcard = ({
     <>
       {filteredFlashcards.length === 0 ? (
         <div className="relative group">
-          <div className="absolute -inset-1 text-primary-foreground bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-xl rounded-2xl"></div>
+          <div className="absolute -inset-1 text-primary-foreground dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border backdrop-blur-xl rounded-4xl"></div>
           <div className="relative rounded-3xl p-16 text-center">
-            <div className="inline-block p-6 bg-linear-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90  rounded-4xl mb-6">
+            <div className="inline-block p-6 dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-70  rounded-4xl mb-6">
               <BookOpen className="w-20 h-20 text-purple-400/50" />
             </div>
             <p className="text-xl font-semibold mb-2 text-white">
@@ -50,7 +50,7 @@ export const DeckSearchedFlashcard = ({
             return (
               <div key={flashcard.id} className="relative group cursor-pointer">
                 <div className="relative rounded-2xl p-6 transition-all duration-300 group-hover:scale-105 overflow-hidden h-full flex flex-col gap-y-4 border">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between">
                     <Link
                       href={`/dashboard/flashcards/${flashcard.id}`}
                       className="font-bold text-lg mb-4 line-clamp-3 transition-colors leading-tight flex-1 hover:underline"

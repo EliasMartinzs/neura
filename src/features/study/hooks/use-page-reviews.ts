@@ -9,7 +9,7 @@ type Props = {
 };
 
 export const usePageReviews = ({ data }: Props) => {
-  const now = useMemo(() => new Date(), []);
+  const now = new Date();
 
   const formatTime = useCallback((date: string) => {
     return new Date(date).toLocaleTimeString("pt-BR", {
@@ -55,7 +55,7 @@ export const usePageReviews = ({ data }: Props) => {
         glowColor: "rgba(239, 68, 68, 0.3)",
         iconColor: "text-red-200",
         countBg: "bg-red-500/70",
-        countBorder: "border-red-500/30",
+        countBorder: "#EF4444",
         countText: "text-white",
       },
       {
@@ -70,7 +70,7 @@ export const usePageReviews = ({ data }: Props) => {
         glowColor: "rgba(249, 115, 22, 0.3)",
         iconColor: "text-orange-200",
         countBg: "bg-orange-500/70",
-        countBorder: "border-orange-500/30",
+        countBorder: "#F97316",
         countText: "text-white",
       },
       {
@@ -85,7 +85,7 @@ export const usePageReviews = ({ data }: Props) => {
         glowColor: "rgba(59, 130, 246, 0.3)",
         iconColor: "text-blue-200",
         countBg: "bg-blue-500/70",
-        countBorder: "border-blue-500/30",
+        countBorder: "#3B82F6",
         countText: "text-white",
       },
       {
@@ -100,7 +100,7 @@ export const usePageReviews = ({ data }: Props) => {
         glowColor: "rgba(16, 185, 129, 0.3)",
         iconColor: "text-emerald-200",
         countBg: "bg-emerald-500/70",
-        countBorder: "border-emerald-500/30",
+        countBorder: "#22C55E",
         countText: "text-white",
       },
     ],

@@ -21,14 +21,9 @@ export const Title = ({ children, action }: Props) => {
         ease: "easeIn",
         duration: 0.8,
       }}
-      className={cn(
-        "max-sm:max-w-sm mx-auto md:max-w-md lg:max-w-lg",
-        action && "flex items-center justify-between"
-      )}
+      className={cn(action && "flex items-center justify-between")}
     >
-      <h2 className="text-lg capitalize font-semibold lg:text-2xl">
-        {children}
-      </h2>
+      <h2 className="text-xl font-semibold lg:text-4xl">{children}</h2>
 
       {action && action}
     </motion.div>

@@ -68,7 +68,7 @@ export function TopTagsWidgetComponent({ topTags }: Props) {
 
   const tags = useMemo(() => {
     return topTags.map((item) => ({
-      tag: item.tag,
+      tag: item.tag || item,
       count: item.count || 0,
     }));
   }, [topTags]);
@@ -80,6 +80,8 @@ export function TopTagsWidgetComponent({ topTags }: Props) {
   const maxCount = Math.max(...tags.map((tag) => tag.count), 1);
   const currentTag = tags[selectedTag];
   const currentColor = colors[selectedTag];
+
+  console.log(tags);
 
   return (
     <div className="w-full">
@@ -165,7 +167,7 @@ export function TopTagsWidgetComponent({ topTags }: Props) {
                           #{selectedTag + 1} Mais Usada
                         </div>
                         <h3 className="text-4xl font-extrabold text-white mb-2">
-                          {currentTag?.tag.slice(0, 5)}
+                          {String(currentTag.tag).slice(0, 5)}
                         </h3>
                       </div>
 
@@ -215,7 +217,7 @@ export function TopTagsWidgetComponent({ topTags }: Props) {
 
                   return (
                     <button
-                      key={tag.tag}
+                      key={tag.tag as string}
                       onClick={() => setSelectedTag(index)}
                       className="w-full text-left duration-300 focus:outline-none group"
                       style={{
@@ -252,7 +254,7 @@ export function TopTagsWidgetComponent({ topTags }: Props) {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="font-bold text-white truncate">
-                                {tag.tag}
+                                {tag.tag as string}
                               </div>
                               <div className="text-xs text-slate-400">
                                 {tag.count} utilizações

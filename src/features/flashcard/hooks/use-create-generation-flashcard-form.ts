@@ -37,8 +37,9 @@ export function useCreateFlashcardGenerationForm({
   /** Campos por etapa */
   const stepFields: Record<number, (keyof createFlashcardGenerationForm)[]> = {
     1: ["deckId"],
-    2: ["prompt", "topic", "subtopic", "amount"],
-    3: ["difficulty", "bloomLevel", "generationMode"],
+    2: ["difficulty"],
+    3: ["prompt", "topic", "subtopic", "amount"],
+    4: ["bloomLevel", "generationMode"],
   };
 
   /** Valida apenas os campos do passo atual */
@@ -57,7 +58,7 @@ export function useCreateFlashcardGenerationForm({
   const nextStep = async () => {
     const valid = await validateStep();
     if (!valid) return false;
-    setStep((prev) => Math.min(prev + 1, 3));
+    setStep((prev) => Math.min(prev + 1, 4));
     return true;
   };
 
@@ -70,6 +71,6 @@ export function useCreateFlashcardGenerationForm({
     nextStep,
     prevStep,
     stepFields,
-    isLastStep: step === 3,
+    isLastStep: step === 4,
   };
 }

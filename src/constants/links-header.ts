@@ -1,6 +1,8 @@
 import {
+  Cpu,
   House,
   Layers,
+  Lightbulb,
   LucideIcon,
   RectangleHorizontal,
   Star,
@@ -12,12 +14,6 @@ type LinksHeader = {
   href: string;
   icon: LucideIcon;
   label: string;
-  items?: {
-    id: number;
-    href: string;
-    label: string;
-    icon: LucideIcon;
-  }[];
 };
 
 export const linksHeader: LinksHeader[] = [
@@ -47,6 +43,18 @@ export const linksHeader: LinksHeader[] = [
   },
   {
     id: 5,
+    href: "/dashboard/explain-learn",
+    icon: Lightbulb,
+    label: "Explique e Aprenda",
+  },
+  {
+    id: 6,
+    href: "/dashboard/quiz",
+    icon: Cpu,
+    label: "Quiz",
+  },
+  {
+    id: 99,
     href: "/dashboard/profile",
     icon: User,
     label: "Perfil",

@@ -3,7 +3,7 @@ import { ReviewCardForm } from "@/components/shared/review-card-form";
 import { ResponseUseGetReviews } from "@/features/study/api/use-get-reviews";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Flame } from "lucide-react";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 type Flashcard = NonNullable<ResponseUseGetReviews["data"]>["today"][number];
 
@@ -12,7 +12,7 @@ type Props = {
   urgent: Flashcard[] | undefined;
 };
 
-export const ReviewSessionCard = ({ today, urgent }: Props) => {
+const ReviewSessionCardComponent = ({ today, urgent }: Props) => {
   const [selected, setSelected] = useState<"urgent" | "today">("today");
   const [isFlipped, setIsFlipped] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,7 +57,7 @@ export const ReviewSessionCard = ({ today, urgent }: Props) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-x-4">
+      <div className="flex flex-col lg:flex-row gap-x-4">
         {columns.map((column) => {
           const Icon = column.icon;
 
@@ -76,7 +76,7 @@ export const ReviewSessionCard = ({ today, urgent }: Props) => {
             >
               <div className="sticky top-0 z-10 mb-4">
                 <div
-                  className={`relative overflow-hidden rounded-2xl bg-linear-to-br ${column.bgGradient} border border-slate-700/50 backdrop-blur-xl p-4`}
+                  className={`relative overflow-hidden rounded-4xl dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border backdrop-blur-xl p-6`}
                 >
                   <div
                     className="absolute inset-0 opacity-20 blur-2xl"
@@ -173,3 +173,6 @@ export const ReviewSessionCard = ({ today, urgent }: Props) => {
     </div>
   );
 };
+
+export const ReviewSessionCard = memo(ReviewSessionCardComponent);
+ReviewSessionCard.displayName = "ReviewSessionCard";

@@ -32,6 +32,9 @@ import useProfile from "@/features/profile/api/use-profile";
 import { EmptyState } from "@/lib/query/empty-state";
 import { ErrorState } from "@/lib/query/error-state";
 import { LoadingState } from "@/lib/query/loading-state";
+import { useDashboard } from "@/features/session/api/use-dashboard";
+import { StudyHeatmapWidget } from "../_components/study-heatmap-widget";
+import { Button } from "@/components/ui/button";
 
 type MostStudiedCategory = {
   tag: string;
@@ -42,6 +45,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showTags, setShowTags] = useState(5);
   const { user, isError, isLoading, refetch, stats, activities } = useProfile();
+  const { data } = useDashboard();
 
   if (isLoading) {
     return <LoadingState />;
@@ -56,6 +60,8 @@ export default function ProfilePage() {
   }
 
   const getInitials = () => {
+    if (!user.name) return;
+
     return user.name
       .split(" ")
       .map((n) => n.at(0))
@@ -88,13 +94,11 @@ export default function ProfilePage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-2 text-foreground">
             {user?.name} {user?.surname}
           </h1>
-          <p className="text-muted-foreground text-lg mb-4">{user?.email}</p>
+          <p className="text-foreground text-lg mb-4">{user?.email}</p>
           {user?.bio && (
-            <p className="text-muted-foreground italic max-w-2xl mx-auto mb-6">
-              {user?.bio}
-            </p>
+            <p className=" italic max-w-2xl mx-auto mb-6">{user?.bio}</p>
           )}
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-6 text-sm text-foreground ">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               {/* <span>Membro há {getDaysActive()} dias</span> */}
@@ -109,13 +113,13 @@ export default function ProfilePage() {
           </div>
 
           <div className="gap-x-4 flex items-center justify-center">
-            <button
+            <Button
               onClick={() => setIsEditing((prevState) => !prevState)}
               className="text-white mt-6 px-8 py-3 bg-linear-to-r from-purple-500 to-pink-500 rounded-full font-semibold hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 inline-flex items-center gap-2"
             >
               <Edit2 className="w-4 h-4" />
               Editar Perfil
-            </button>
+            </Button>
             <ChangeImageProfile user={user} />
           </div>
 
@@ -154,12 +158,14 @@ export default function ProfilePage() {
           />
         </div>
 
+        <StudyHeatmapWidget dailyStudy={data?.data?.dailyStudy!} />
+
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Left Column - Performance */}
           <div className="lg:col-span-2 space-y-6">
             {/* Performance Chart */}
-            <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-4xl p-8 border border-slate-700/50 shadow-xl">
+            <div className="dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 rounded-4xl p-8 border shadow-xl">
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl font-bold flex items-center gap-3">
                   <Activity className="w-7 h-7 text-purple-400" />
@@ -175,9 +181,7 @@ export default function ProfilePage() {
               {/* Accuracy Bar */}
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="text-muted-foreground font-medium">
-                    Taxa de Acurácia
-                  </span>
+                  <span className="font-medium">Taxa de Acurácia</span>
                   <span className="text-3xl font-bold bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                     {stats?.accuracyRateCards.toFixed(2) || 0}%
                   </span>
@@ -228,7 +232,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-4xl p-8 border border-slate-700/50 shadow-xl">
+            <div className="dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 rounded-4xl p-8 border shadow-xl">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                 <Clock className="w-7 h-7 text-blue-400" />
                 Atividade Recente
@@ -253,7 +257,7 @@ export default function ProfilePage() {
           {/* Right Column - Categories & Achievements */}
           <div className="space-y-6">
             {/* Top Categories */}
-            <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-4xl p-8 border border-slate-700/50 shadow-xl">
+            <div className="dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 rounded-4xl p-8 border shadow-xl">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                 <Award className="w-7 h-7 text-purple-400" />
                 Top Tags
@@ -270,7 +274,7 @@ export default function ProfilePage() {
                     .map((category, index) => (
                       <div key={index} className="relative group">
                         <div className="absolute inset-0 bg-linear-to-r from-purple-500/20 to-pink-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="relative flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 hover:border-purple-500/50 transition-all">
+                        <div className="relative flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border hover:border-purple-500/50 transition-all">
                           <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg">
                             {index + 1}
                           </div>
@@ -278,16 +282,14 @@ export default function ProfilePage() {
                             <p className="font-semibold text-lg">
                               {category?.tag}
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                              Categoria mais estudada
-                            </p>
+                            <p className="text-sm ">Categoria mais estudada</p>
                           </div>
                         </div>
                       </div>
                     ))
                 )}
                 <button
-                  className="text-muted-foreground"
+                  className=""
                   onClick={() =>
                     setShowTags((prevState) => (prevState === 5 ? 10 : 5))
                   }
@@ -307,7 +309,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Achievements */}
-            <div className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 rounded-4xl p-8 border border-slate-700/50 shadow-xl">
+            <div className=" dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 rounded-4xl p-8 border shadow-xl">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                 <Trophy className="w-7 h-7 text-yellow-400" />
                 Conquistas
@@ -354,7 +356,7 @@ export default function ProfilePage() {
               <h3 className="text-2xl font-bold text-red-400 mb-2">
                 Zona de Perigo
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className=" mb-4">
                 Esta ação é permanente e não pode ser desfeita. Todos os seus
                 dados serão perdidos.
               </p>
@@ -371,16 +373,16 @@ function HeroStat({ icon, value, label, color }: any) {
   return (
     <div className="relative group">
       <div
-        className={`absolute inset-0 bg-linear-to-r ${color} rounded-2xl blur-lg opacity-0 group-hover:opacity-50 transition-opacity`}
+        className={`absolute inset-0 bg-linear-to-r ${color} rounded-4xl blur-lg opacity-0 group-hover:opacity-50 transition-opacity`}
       ></div>
-      <div className="relative h-full bg-linear-to-br from-slate-900 to-slate-800 rounded-2xl p-6 border border-slate-700/50 hover:border-slate-600 transition-all shadow-xl">
+      <div className="relative h-full dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 rounded-4xl p-6 border transition-all shadow-xl">
         <div
           className={`w-14 h-14 bg-linear-to-br ${color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}
         >
           {icon}
         </div>
         <p className="text-3xl md:text-4xl font-bold mb-1">{value}</p>
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-sm ">{label}</p>
       </div>
     </div>
   );
@@ -393,7 +395,7 @@ function StatBox({ icon, label, value, bgColor, borderColor }: any) {
     >
       <div className="flex items-center gap-3 mb-2">
         {icon}
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-sm ">{label}</span>
       </div>
       <p className="text-3xl font-bold">{value}</p>
     </div>
@@ -413,13 +415,13 @@ function ActivityItem({
     ACTIVITY_ICONS[icon as ActivityIconType] ?? ACTIVITY_ICONS["sparkles"];
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-xl border border-slate-700/30 hover:border-slate-600/50 transition-all">
+    <div className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border transition-all">
       <div className="p-2 bg-slate-700/50 rounded-lg">
         <Icon />
       </div>
       <div className="flex-1">
         <p className="font-semibold">{message}</p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm ">
           {new Intl.DateTimeFormat("pt-BR", {
             day: "2-digit",
             month: "2-digit",
@@ -439,7 +441,7 @@ function Achievement({ emoji, title, description, gradient }: any) {
       <div
         className={`absolute inset-0 bg-linear-to-r ${gradient} rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity`}
       ></div>
-      <div className="relative flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 hover:border-slate-600 transition-all">
+      <div className="relative flex items-center bg-slate-800/50 gap-4 p-4 rounded-xl border transition-all">
         <div
           className={`w-14 h-14 bg-linear-to-br ${gradient} rounded-xl flex items-center justify-center text-2xl shadow-lg`}
         >
@@ -447,7 +449,7 @@ function Achievement({ emoji, title, description, gradient }: any) {
         </div>
         <div className="flex-1">
           <p className="font-semibold text-lg">{title}</p>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-sm ">{description}</p>
         </div>
       </div>
     </div>

@@ -22,7 +22,14 @@ export const createDeckSchema = z.object({
     error: "Por favor selecione a cor do deck",
   }),
   difficulty: difficultyEnum.default("EASY").optional(),
-  tags: z.array(z.string()).default([]).optional(),
+  tags: z
+    .array(
+      z.string().regex(/^\S+$/, {
+        error: "A tag não pode conter espaços.",
+      })
+    )
+    .default([])
+    .optional(),
 });
 
 export type CreateDeckForm = z.infer<typeof createDeckSchema>;

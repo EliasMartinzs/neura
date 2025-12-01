@@ -36,7 +36,7 @@ export const useFlashcardFiltersStore = create<FlashcardFiltersStore>()(
     {
       name: "flashcard-filters-storage",
       partialize: (state) => ({
-        deck: state.deck,
+        perPage: state.perPage,
       }),
     }
   )

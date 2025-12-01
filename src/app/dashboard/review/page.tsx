@@ -22,11 +22,10 @@ export default function ReviewPage() {
       loading={<LoadingState />}
       error={({ refetch }) => <ErrorState onRetry={refetch} />}
       fetchingIndicator={<FetchingIndicatorState />}
-      empty={<EmptyState />}
     >
       {(data) => {
-        const today = useMemo(() => data?.data?.today, [data?.data?.today]);
-        const urgent = useMemo(() => data?.data?.urgent, [data?.data?.urgent]);
+        const today = data?.data?.today;
+        const urgent = data?.data?.urgent;
 
         return (
           <div className="space-y-4">
@@ -51,8 +50,8 @@ export default function ReviewPage() {
                 </div>
 
                 {/* Total geral */}
-                <div className="bg-linear-to-br from-slate-800/80 to-slate-900/80 border border-slate-700 rounded-2xl px-6 py-3 backdrop-blur-sm">
-                  <div className="text-muted-foreground text-xs font-medium mb-1">
+                <div className="dark:bg-none bg-linear-to-br from-slate-700 to-slate-600 border rounded-2xl px-6 py-3 backdrop-blur-sm">
+                  <div className="text-white text-xs font-medium mb-1">
                     Total de Cards
                   </div>
                   <div className="text-4xl font-extrabold text-white">
@@ -62,7 +61,7 @@ export default function ReviewPage() {
               </div>
               <div className="flex items-center gap-x-3">
                 <Button
-                  variant={"gradient"}
+                  variant={"icon"}
                   onClick={() =>
                     setSelected((prevState) =>
                       prevState === "overview" ? "session" : "overview"

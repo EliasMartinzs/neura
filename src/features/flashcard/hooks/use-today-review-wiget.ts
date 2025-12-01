@@ -14,7 +14,7 @@ type Flashcard = {
 };
 
 export const useTodayReviewWidget = (flashcards: Flashcard[]) => {
-  const now = useMemo(() => new Date(), []);
+  const now = new Date();
 
   const overdueToday = useMemo(() => {
     return flashcards.filter(
