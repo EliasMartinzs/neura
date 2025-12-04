@@ -1,14 +1,15 @@
 import { auth } from "@/lib/auth";
 import { Hono } from "hono";
-import { handle } from "hono/vercel";
 import { cors } from "hono/cors";
+import { handle } from "hono/vercel";
+import { swaggerUI } from "@hono/swagger-ui";
 
 export type AppVariables = {
   user: typeof auth.$Infer.Session.user | null;
   session: typeof auth.$Infer.Session.session | null;
 };
 
-const app = new Hono<{
+export const app = new Hono<{
   Variables: AppVariables;
 }>({
   strict: false,
@@ -17,7 +18,7 @@ const app = new Hono<{
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://neura-kappa.vercel.app"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     exposeHeaders: ["Set-Cookie"],
@@ -44,12 +45,20 @@ app.use("*", async (c, next) => {
 app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
 
 import deck from "./controllers/deck";
+import explainLearn from "./controllers/explain-learn";
 import flashcard from "./controllers/flashcard";
 import profile from "./controllers/profile";
+import quiz from "./controllers/quiz";
 import session from "./controllers/session";
 import study from "./controllers/study";
-import explainLearn from "./controllers/explain-learn";
-import quiz from "./controllers/quiz";
+import { openAPIRouteHandler } from "hono-openapi";
+import { sessionDocs } from "./docs/session.docs";
+import { profileDocs } from "./docs/profile.docs";
+import { deckDocs } from "./docs/deck.docs";
+import { flashcardDocs } from "./docs/flashcard.dock";
+import { studySessionDocs } from "./docs/study.docs";
+import { explainLearnDocs } from "./docs/explain-learn.docs";
+import { quizDocs } from "./docs/quiz.docs";
 
 const route = app
   .route("/session", session)
@@ -59,6 +68,36 @@ const route = app
   .route("/study", study)
   .route("/explain-learn", explainLearn)
   .route("/quiz", quiz);
+
+const allDocs = {
+  ...sessionDocs,
+  ...profileDocs,
+  ...deckDocs,
+  ...flashcardDocs,
+  ...studySessionDocs,
+  ...explainLearnDocs,
+  ...quizDocs,
+};
+
+app.get(
+  "/openapi.json",
+  openAPIRouteHandler(app, {
+    documentation: {
+      info: {
+        title: "Meu App API",
+        version: "1.0.0",
+        description: "Documentação completa do backend Hono + Next.js",
+      },
+      servers: [
+        { url: "http://localhost:3000/api", description: "Servidor local" },
+      ],
+      paths: allDocs,
+    },
+    includeEmptyPaths: false,
+  })
+);
+
+app.get("/docs/*", swaggerUI({ url: "/api/openapi.json" }));
 
 export const GET = handle(app);
 export const POST = handle(app);

@@ -5,8 +5,9 @@ import prisma from "./db";
 import { sendEmail } from "./mailer";
 import { resetPasswordTemplate } from "./templates/reset-password-template";
 import { verifyEmailTemplate } from "./templates/verify-email";
+import { jwt } from "better-auth/plugins";
 
-export const auth = betterAuth({
+export const auth: ReturnType<typeof betterAuth> = betterAuth({
   user: {
     deleteUser: {
       enabled: true,
@@ -44,8 +45,9 @@ export const auth = betterAuth({
       maxAge: 60,
     },
   },
-  plugins: [nextCookies()],
+  plugins: [nextCookies(), jwt()],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  trustedOrigins: ["http://localhost:3000", "https://meuapp.vercel.app"],
 });

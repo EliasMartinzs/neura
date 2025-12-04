@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -124,6 +125,8 @@ model User {
   openStudySessions    OpenStudySession[]
   quizSessions         QuizSession[]
   dailyStudyActivities DailyStudyActivity[]
+
+  @@map("user")
 }
 
 model Session {
@@ -136,6 +139,9 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
 }
 
 model Account {
@@ -153,6 +159,9 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
 }
 
 model Verification {
@@ -162,6 +171,9 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
 
 model UserStats {
@@ -471,4 +483,13 @@ model QuizExplanation {
   type ExplanationType
 
   createdAt DateTime @default(now())
+}
+
+model Jwks {
+  id         String   @id
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+
+  @@map("jwks")
 }

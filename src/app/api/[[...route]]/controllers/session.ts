@@ -1,9 +1,9 @@
 import prisma from "@/lib/db";
-import { authMiddleware } from "@/middlewares/auth-middleware";
+import { getBrasiliaDayRange } from "@/lib/helpers/get-brasilia-day-range";
 import { handlePrismaError } from "@/lib/helpers/handle-prisma-error";
+import { authMiddleware } from "@/middlewares/auth-middleware";
 import { Hono } from "hono";
 import { AppVariables } from "../route";
-import { getBrasiliaDayRange } from "@/lib/helpers/get-brasilia-day-range";
 
 const app = new Hono<{
   Variables: AppVariables;

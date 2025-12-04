@@ -1,7 +1,7 @@
 "use client";
 
+import { Title } from "@/components/shared/title";
 import { useDashboard } from "@/features/session/api/use-dashboard";
-import { EmptyState } from "@/lib/query/empty-state";
 import { ErrorState } from "@/lib/query/error-state";
 import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 import { LoadingState } from "@/lib/query/loading-state";
@@ -11,10 +11,8 @@ import { useMemo } from "react";
 import { AccuracyWidget } from "./_components/accuracy-widget";
 import { BloomLevelWidget } from "./_components/bloom-level-widget";
 import { StatsWidget } from "./_components/stats-widget";
-import { StudyHeatmapWidget } from "./_components/study-heatmap-widget";
 import { TodayReviewWidget } from "./_components/today-review-widget";
 import { TopTagsWidget } from "./_components/top-tags-widget";
-import { Title } from "@/components/shared/title";
 
 type BloomStatus = {
   level: string;
