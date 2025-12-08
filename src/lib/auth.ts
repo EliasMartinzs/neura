@@ -5,7 +5,7 @@ import prisma from "./db";
 import { sendEmail } from "./mailer";
 import { resetPasswordTemplate } from "./templates/reset-password-template";
 import { verifyEmailTemplate } from "./templates/verify-email";
-import { jwt } from "better-auth/plugins";
+import { bearer, jwt } from "better-auth/plugins";
 
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
   user: {
@@ -45,7 +45,15 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
       maxAge: 60,
     },
   },
-  plugins: [nextCookies(), jwt()],
+  plugins: [
+    nextCookies(),
+    jwt({
+      jwt: {
+        expirationTime: "1h", // tempo de expiração do token
+      },
+    }),
+    bearer(),
+  ],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
