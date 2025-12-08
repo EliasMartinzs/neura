@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { Title } from "@/components/shared/title";
-import { useDashboard } from "@/features/session/api/use-dashboard";
-import { ErrorState } from "@/lib/query/error-state";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
-import { StudiedCategory } from "@/utils/type";
-import { useMemo } from "react";
-import { AccuracyWidget } from "./_components/accuracy-widget";
-import { BloomLevelWidget } from "./_components/bloom-level-widget";
-import { StatsWidget } from "./_components/stats-widget";
-import { TodayReviewWidget } from "./_components/today-review-widget";
-import { TopTagsWidget } from "./_components/top-tags-widget";
+import { Title } from '@/components/shared/title';
+import { useDashboard } from '@/features/session/api/use-dashboard';
+import { ErrorState } from '@/lib/query/error-state';
+import { FetchingIndicatorState } from '@/lib/query/fetching-indicatror-state';
+import { LoadingState } from '@/lib/query/loading-state';
+import { QueryState } from '@/lib/query/query-state';
+import { StudiedCategory } from '@/utils/type';
+import { useMemo } from 'react';
+import { AccuracyWidget } from './_components/accuracy-widget';
+import { BloomLevelWidget } from './_components/bloom-level-widget';
+import { StatsWidget } from './_components/stats-widget';
+import { TodayReviewWidget } from './_components/today-review-widget';
+import { TopTagsWidget } from './_components/top-tags-widget';
 
 type BloomStatus = {
   level: string;
