@@ -21,12 +21,12 @@ const app = new Hono<{
 }>()
   .put(
     "/",
-    zValidator("form", editProfileSchema),
+    zValidator("json", editProfileSchema),
     authMiddleware,
     heavyWriteSecurityMiddleware,
     async (c) => {
       const user = c.get("user");
-      const values = c.req.valid("form");
+      const values = c.req.valid("json");
 
       try {
         await prisma.user.update({

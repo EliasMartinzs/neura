@@ -8,7 +8,7 @@ export type ResponseEditProfile = InferResponseType<
 >;
 export type RequestEditProfile = InferRequestType<
   typeof client.api.profile.$put
->["form"];
+>["json"];
 
 export const useEditProfile = () => {
   const queryClient = useQueryClient();
@@ -17,7 +17,7 @@ export const useEditProfile = () => {
     mutationKey: ["profile"],
     mutationFn: async (values) => {
       const res = await client.api.profile.$put({
-        form: values,
+        json: values,
       });
 
       return await res.json();
