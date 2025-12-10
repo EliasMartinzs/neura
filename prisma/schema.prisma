@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -207,7 +206,7 @@ model DailyStudyActivity {
   userId String
   date   DateTime @db.Date
   count  Int      @default(0) // quantas ações de estudo foram feitas no dia
-  user   User     @relation(fields: [userId], references: [id])
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
 }

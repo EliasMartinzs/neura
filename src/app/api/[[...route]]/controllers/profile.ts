@@ -27,7 +27,7 @@ const app = new Hono<{
     async (c) => {
       const user = c.get("user");
       const values = c.req.valid("json");
-      console.log("💥 [BACKEND] RECEIVED VALUES:", values);
+
       try {
         await prisma.user.update({
           where: {
