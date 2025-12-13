@@ -12,6 +12,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import z from "zod";
 import { AppVariables } from "../route";
+import { Prisma } from "@prisma/client";
 
 const app = new Hono<{
   Variables: AppVariables;
@@ -27,6 +28,7 @@ const app = new Hono<{
           .transform((val) => (typeof val === "string" ? [val] : val)),
         page: z.coerce.number().optional(),
         perPage: z.coerce.number().optional(),
+        search: z.string().optional(),
       })
     ),
     authMiddleware,
@@ -34,7 +36,12 @@ const app = new Hono<{
     async (c) => {
       const user = c.get("user");
 
-      const { page = 1, perPage = 10, tags } = c.req.valid("query");
+      const {
+        page = 1,
+        perPage = 10,
+        tags,
+        search = "",
+      } = c.req.valid("query");
 
       try {
         const where = {
@@ -44,6 +51,25 @@ const app = new Hono<{
                 tags: {
                   hasSome: tags,
                 },
+              }
+            : {}),
+
+          ...(search
+            ? {
+                OR: [
+                  {
+                    name: {
+                      contains: search,
+                      mode: Prisma.QueryMode.insensitive,
+                    },
+                  },
+                  {
+                    description: {
+                      contains: search,
+                      mode: Prisma.QueryMode.insensitive,
+                    },
+                  },
+                ],
               }
             : {}),
           deletedAt: null,

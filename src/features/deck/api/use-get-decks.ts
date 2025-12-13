@@ -9,17 +9,24 @@ interface UseGetDecksProps {
   tags?: string[];
   page?: number;
   perPage?: number;
+  search?: string;
 }
 
-export const useGetDecks = ({ tags, page, perPage }: UseGetDecksProps = {}) => {
+export const useGetDecks = ({
+  tags,
+  page,
+  perPage,
+  search,
+}: UseGetDecksProps = {}) => {
   const query = useQuery<ResponseGetDecks, Error>({
-    queryKey: ["deck", tags, page, perPage],
+    queryKey: ["deck", tags, page, perPage, search],
     queryFn: async () => {
       const res = await client.api.deck.$get({
         query: {
           ...(tags ? { tags } : {}),
           ...(page ? { page: String(page) } : {}),
           ...(perPage ? { perPage: String(perPage) } : {}),
+          ...(search ? { search } : {}),
         } satisfies Request,
       });
 

@@ -5,6 +5,8 @@ type UseDeckFilters = {
   tags: string[];
   page: number;
   perPage: number;
+  search: string;
+  setSearch: (search: string) => void;
   toggleTag: (tag: string) => void;
   clearTags: () => void;
   setPage: (page: number) => void;
@@ -18,6 +20,7 @@ export const useDeckFilterStore = create<UseDeckFilters>()(
       tags: [],
       page: 1,
       perPage: 10,
+      search: "",
       toggleTag: (tag) =>
         set((state) => ({
           tags: state.tags.includes(tag)
@@ -28,6 +31,7 @@ export const useDeckFilterStore = create<UseDeckFilters>()(
       setPage: (page) => set({ page }),
       setPerPage: (perPage) => set({ perPage, page: 1 }),
       reset: () => set({ tags: [], page: 1, perPage: 10 }),
+      setSearch: (search: string) => set({ search }),
     }),
     {
       name: "deck-toolbar-storage",

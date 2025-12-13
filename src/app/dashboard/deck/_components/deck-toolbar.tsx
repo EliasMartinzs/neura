@@ -16,8 +16,6 @@ import { Tooltip } from "@/components/shared/tooltip";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import { ErrorState } from "@/lib/query/error-state";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,26 +39,9 @@ import { OpenDeckDocumentation } from "./open-deck-documentation";
 export const DeckToolbar = () => {
   const query = useGetAllTags();
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const { tags, toggleTag, reset, setPerPage, perPage } = useDeckFilterStore();
+  const { tags, toggleTag, reset, setPerPage, perPage, search, setSearch } =
+    useDeckFilterStore();
   const { onOpen } = useTrashStore();
-
-  const initialSearch = searchParams.get("q") ?? "";
-
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set("q", value);
-    else params.delete("q");
-
-    router.replace(`?${params.toString()}`, { scroll: false });
-  };
 
   return (
     <div>
@@ -103,8 +84,8 @@ export const DeckToolbar = () => {
                 <div className="relative flex items-center justify-center">
                   <Label className="relative">
                     <Input
-                      value={searchTerm}
-                      onChange={handleChange}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
                       placeholder="Pesquise..."
                       className="max-sm:w-[90vw] md:w-md"
                     />
