@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { TextEffect } from "@/components/ui/text-effect";
 import { AnimatedGroup } from "@/components/ui/animated-group";
+import HeroImg1 from "../../../../public/neura-1.png";
+import HeroImg2 from "../../../../public/neura-2.png";
+import HeroImg3 from "../../../../public/neura-3.png";
 
 const transitionVariants = {
   item: {
@@ -39,7 +42,7 @@ export default function HeroSection() {
           <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
         </div>
         <section>
-          <div className="relative pt-24 md:pt-36">
+          <div className="relative pt-24 md:pt-36 md:pb-20">
             <div
               aria-hidden
               className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"
@@ -139,14 +142,14 @@ export default function HeroSection() {
                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
                   <Image
                     className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                    src="https://cdn.dribbble.com/userupload/16647042/file/original-cf8f3c3d797b12a9b33883077343f8a8.png?resize=1024x768&vertical=center"
+                    src={HeroImg1}
                     alt="app screen"
                     width="2700"
                     height="1440"
                   />
                   <Image
                     className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
-                    src="https://cdn.dribbble.com/userupload/16647042/file/original-cf8f3c3d797b12a9b33883077343f8a8.png?resize=1024x768&vertical=center"
+                    src={HeroImg1}
                     alt="app screen"
                     width="2700"
                     height="1440"
@@ -154,6 +157,45 @@ export default function HeroSection() {
                 </div>
               </div>
             </AnimatedGroup>
+
+            <div className="flex items-center justify-center">
+              <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
+                  <Image
+                    className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                    src={HeroImg2}
+                    alt="app screen"
+                    width="2700"
+                    height="1440"
+                  />
+                  <Image
+                    className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
+                    src={HeroImg2}
+                    alt="app screen"
+                    width="2700"
+                    height="1440"
+                  />
+                </div>
+              </div>
+              <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
+                  <Image
+                    className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                    src={HeroImg3}
+                    alt="app screen"
+                    width="2700"
+                    height="1440"
+                  />
+                  <Image
+                    className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
+                    src={HeroImg3}
+                    alt="app screen"
+                    width="2700"
+                    height="1440"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

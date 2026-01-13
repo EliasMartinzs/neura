@@ -1,44 +1,9 @@
-import { Logo } from "@/components/logo";
 import Link from "next/link";
-
-const links = [
-  {
-    title: "Features",
-    href: "#",
-  },
-  {
-    title: "Prços",
-    href: "#",
-  },
-  {
-    title: "Ajuda",
-    href: "#",
-  },
-  {
-    title: "Sobre",
-    href: "#",
-  },
-];
 
 export default function FooterSection() {
   return (
     <footer className="py-16 md:py-32">
       <div className="mx-auto max-w-5xl px-6">
-        <Link href="/" aria-label="go home" className="mx-auto block size-fit">
-          <Logo />
-        </Link>
-
-        <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
-          {links.map((link, index) => (
-            <Link
-              key={index}
-              href={link.href}
-              className="text-muted-foreground hover:text-primary block duration-150"
-            >
-              <span>{link.title}</span>
-            </Link>
-          ))}
-        </div>
         <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
           <Link
             href="#"
@@ -168,7 +133,7 @@ export default function FooterSection() {
         </div>
         <span className="text-muted-foreground block text-center text-sm">
           {" "}
-          © {new Date().getFullYear()} Tailark, All rights reserved
+          © {new Date().getFullYear()} Neura, Todos os direitos reservados
         </span>
       </div>
     </footer>

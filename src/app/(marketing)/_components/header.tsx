@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { Diamond, Menu, X } from "lucide-react";
+import { Diamond, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { cn } from "@/lib/utils";
@@ -40,7 +39,7 @@ export const HeroHeader = () => {
                 aria-label="home"
                 className="flex items-center space-x-2 font-medium"
               >
-                <Diamond /> <span>Neura</span>
+                <Sparkles /> <span>Neura</span>
               </Link>
 
               <button
