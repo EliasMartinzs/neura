@@ -46,11 +46,11 @@ export default function SignIn() {
             router.push(`/auth/verify-email/${encodeURIComponent(data.email)}`);
           } else {
             toast.error(
-              error.error.message || "Houve um erro, tente novamente!"
+              error.error.message || "Houve um erro, tente novamente!",
             );
           }
         },
-      }
+      },
     );
   }
 
@@ -62,7 +62,7 @@ export default function SignIn() {
         duration: 0.9,
         scale: { type: "keyframes", visualDuration: 0.4, bounce: 0.5 },
       }}
-      className="min-w-sm md:min-w-md p-6 md:p-10 rounded-lg dark:shadow border dark:border-none space-y-6"
+      className="min-w-sm md:min-w-md p-6 md:p-10 rounded-lg dark:shadow bg-card text-card-foreground space-y-6"
     >
       <div className="w-full flex flex-col items-center justify-center gap-y-6">
         <Diamond className="size-6 text-muted-foreground" />

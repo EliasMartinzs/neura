@@ -52,7 +52,7 @@ export default function RequestPasswordReset() {
           form.reset();
         },
         onError(context) {},
-      }
+      },
     );
 
     if (error?.message) {
@@ -68,7 +68,7 @@ export default function RequestPasswordReset() {
         duration: 0.9,
         scale: { type: "keyframes", visualDuration: 0.4, bounce: 0.5 },
       }}
-      className="min-w-sm md:min-w-md p-6 md:p-10 rounded-lg dark:shadow space-y-6"
+      className="min-w-sm md:min-w-md p-6 md:p-10 rounded-lg dark:shadow bg-card text-card-foreground space-y-6"
     >
       {sentEmail ? (
         <div className="max-w-sm space-y-6">

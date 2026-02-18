@@ -45,14 +45,14 @@ export default function SignUp() {
       {
         onError: (error) => {
           toast.error(
-            error.error.message || "Erro ao se cadrastar, tente novamente!"
+            error.error.message || "Erro ao se cadrastar, tente novamente!",
           );
         },
         onSuccess: () => {
           toast.success("Por favor verifique seu E-Mail!");
           router.push("/auth/sign-in");
         },
-      }
+      },
     );
   }
 
@@ -64,7 +64,7 @@ export default function SignUp() {
         duration: 0.9,
         scale: { type: "keyframes", visualDuration: 0.4, bounce: 0.5 },
       }}
-      className="min-w-sm md:min-w-md p-6 md:p-10 rounded-lg dark:shadow border dark:border-none space-y-6"
+      className="min-w-sm md:min-w-md p-6 md:p-10 rounded-lg dark:shadow bg-card text-card-foreground space-y-6"
     >
       <div className="w-full flex flex-col items-center justify-center gap-y-6">
         <Diamond className="size-6 text-muted-foreground" />
