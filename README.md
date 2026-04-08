@@ -196,6 +196,4 @@ O projeto usa `hono/vercel` para deploy serverless, compatível com:
 
 Este projeto é open source sob a licença MIT.
 
----
 
-Feito com 💜 usando Next.js, Hono e OpenAI
