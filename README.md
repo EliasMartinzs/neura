@@ -95,10 +95,14 @@ Crie um arquivo `.env` na raiz do projeto:
 # ============================================
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/neura"
 
+ARCJET_KEY="sua-chave-secreta"
+
 # ============================================
 # AUTENTICAÇÃO (better-auth)
 # ============================================
 BETTER_AUTH_SECRET="sua-chave-secreta"
+BETTER_AUTH_DOMAIN=""
+BETTER_AUTH_URL=""
 
 # ============================================
 # OPENAI (obrigatório para recursos de IA)
