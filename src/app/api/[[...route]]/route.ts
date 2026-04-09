@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
+import { swaggerUI } from "@hono/swagger-ui";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { handle } from "hono/vercel";
-import { swaggerUI } from "@hono/swagger-ui";
 
 export type AppVariables = {
   user: typeof auth.$Infer.Session.user | null;
@@ -24,7 +24,7 @@ app.use(
     exposeHeaders: ["Set-Cookie"],
     credentials: true,
     maxAge: 86400,
-  })
+  }),
 );
 
 app.use("*", async (c, next) => {
@@ -44,6 +44,7 @@ app.use("*", async (c, next) => {
 
 app.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw));
 
+import { openAPIRouteHandler } from "hono-openapi";
 import deck from "./controllers/deck";
 import explainLearn from "./controllers/explain-learn";
 import flashcard from "./controllers/flashcard";
@@ -51,15 +52,15 @@ import profile from "./controllers/profile";
 import quiz from "./controllers/quiz";
 import session from "./controllers/session";
 import study from "./controllers/study";
-import { openAPIRouteHandler } from "hono-openapi";
-import { sessionDocs } from "./docs/session.docs";
-import { profileDocs } from "./docs/profile.docs";
 import { deckDocs } from "./docs/deck.docs";
-import { flashcardDocs } from "./docs/flashcard.dock";
-import { studySessionDocs } from "./docs/study.docs";
 import { explainLearnDocs } from "./docs/explain-learn.docs";
+import { flashcardDocs } from "./docs/flashcard.dock";
+import { profileDocs } from "./docs/profile.docs";
 import { quizDocs } from "./docs/quiz.docs";
+import { sessionDocs } from "./docs/session.docs";
+import { studySessionDocs } from "./docs/study.docs";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const route = app
   .route("/session", session)
   .route("/profile", profile)
@@ -94,7 +95,7 @@ app.get(
       paths: allDocs,
     },
     includeEmptyPaths: false,
-  })
+  }),
 );
 
 app.get("/docs/*", swaggerUI({ url: "/api/openapi.json" }));

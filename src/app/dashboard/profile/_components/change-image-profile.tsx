@@ -4,7 +4,7 @@ import { AvatarsButton } from "./avatars-button";
 import { useDeleteImage } from "@/features/profile/api/use-delete-image";
 import { useEditProfile } from "@/features/profile/api/use-edit-profile";
 import { getCloudinaryPublicId } from "@/lib/utils";
-import { CldUploadWidget } from "next-cloudinary";
+import { CldUploadWidget, CloudinaryUploadWidgetResults } from "next-cloudinary";
 
 import { ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,12 @@ export const ChangeImageProfile = ({ user }: { user: User }) => {
   const { mutate: mutateEditProfile } = useEditProfile();
   const { mutate: mutateDeleteImageProfile } = useDeleteImage();
 
-  async function handleUpload(result: any) {
-    if (result.event !== "success") return;
+  async function handleUpload(result: CloudinaryUploadWidgetResults) {
+    if (result.event !== "success" || !result.info || typeof result.info !== "object") return;
+
+    const info = result.info as { secure_url?: string };
+    const secureUrl = info.secure_url;
+    if (!secureUrl) return;
 
     const oldPublicId = user.image?.includes("https://res.cloudinary.com")
       ? getCloudinaryPublicId(user.image)
@@ -22,7 +26,7 @@ export const ChangeImageProfile = ({ user }: { user: User }) => {
 
     mutateEditProfile(
       {
-        image: result.info.secure_url,
+        image: secureUrl,
       },
       {
         onSuccess: () => {

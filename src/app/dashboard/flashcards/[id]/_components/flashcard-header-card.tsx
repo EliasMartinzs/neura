@@ -34,7 +34,7 @@ export const FlashcardHeaderCard = ({
       </div>
 
       <div className="space-x-3">
-        <Button variant="icon" onClick={() => setShowStats(!showStats)}>
+        <Button onClick={() => setShowStats(!showStats)}>
           {showStats ? (
             <EyeOff className="w-4 h-4 mr-2" />
           ) : (

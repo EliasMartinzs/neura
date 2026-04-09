@@ -11,14 +11,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { DeckForm } from "./deck-form";
 
 export const CreateDeckButton = () => {
-  const [open, setOpen] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const openModalDeck = searchParams.get("open-modal-deck");
+  const [open, setOpen] = useState(openModalDeck === "true");
 
   useEffect(() => {
     if (openModalDeck) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
     }
   }, [openModalDeck, router]);

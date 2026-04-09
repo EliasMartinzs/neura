@@ -5,6 +5,8 @@ import { QuestionItem } from "./question-item";
 
 type FilteredSesion = ResponseGetExplainQuestions["data"];
 
+type Difficulty = "easy" | "medium" | "hard";
+
 type Props = {
   filteredSessions: FilteredSesion;
   explainUI: {
@@ -12,7 +14,7 @@ type Props = {
     setShowInput: (prev: boolean) => void;
     expandedId: string | null;
     setExpandedId: (prev: string | null) => void;
-    getDifficultyConfig: (difficulty: any) => {
+    getDifficultyConfig: (difficulty: Difficulty) => {
       bg: string;
       text: string;
       glow: string;
@@ -23,7 +25,7 @@ type Props = {
       label: string;
       icon: LucideIcon;
     };
-    formatDate: (dateString: any) => string;
+    formatDate: (dateString: string) => string;
   };
 };
 

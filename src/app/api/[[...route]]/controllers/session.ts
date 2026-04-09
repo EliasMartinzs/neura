@@ -12,10 +12,12 @@ const app = new Hono<{
     try {
       const getUser = c.get("user");
 
+      /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
       const user = await prisma.user.findUnique({
         where: {
           id: getUser?.id!,
         },
+        /* eslint-enable @typescript-eslint/no-non-null-asserted-optional-chain */
         include: {
           decks: {
             where: {
@@ -48,11 +50,13 @@ const app = new Hono<{
 
       const { start: startOfToday, end: endOfToday } = getBrasiliaDayRange(now);
 
+      /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
       const result = await prisma.$transaction(async (tx) => {
         const stats = await prisma.userStats.findUnique({
           where: {
             userId: user?.id!,
           },
+          /* eslint-enable @typescript-eslint/no-non-null-asserted-optional-chain */
           include: {
             user: {
               select: {

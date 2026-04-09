@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import prisma from "@/lib/db";
 import { updateUserStats } from "@/lib/helpers/update-user-stats";
 import { updateUserAccuracyRate } from "@/lib/helpers/update-user-accuracy-rate";
@@ -649,5 +650,7 @@ const app = new Hono<{
       }
     }
   );
+
+/* eslint-enable @typescript-eslint/no-non-null-asserted-optional-chain */
 
 export default app;

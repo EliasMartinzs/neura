@@ -18,14 +18,15 @@ export const CreateFlashcardButton = ({
   trigger: React.ReactNode;
   deckId?: string;
 }) => {
-  const [open, setOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const openModalFlashcard = searchParams.get("open-modal-flashcard");
+  const [open, setOpen] = useState(openModalFlashcard === "true");
   const [type, setType] = useState(false);
 
   useEffect(() => {
     if (openModalFlashcard) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
     }
   }, [openModalFlashcard, router]);

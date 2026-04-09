@@ -1,8 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { getForeground } from "@/constants/circle-colors";
-import { useDeleteFlashcard } from "@/features/flashcard/api/use-delete-flashcard";
-import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +8,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { getForeground } from "@/constants/circle-colors";
+import { useDeleteFlashcard } from "@/features/flashcard/api/use-delete-flashcard";
+import { cn } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 type Props = {
@@ -30,18 +30,18 @@ export const DeleteFlashcardButton = ({ id, color }: Props) => {
         onSuccess: () => {
           setOpen((prev) => !prev);
         },
-      }
+      },
     );
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"icon"} className="hover:rotate-12">
+        <Button className="hover:rotate-12">
           <Trash2
             className={cn(
               "w-4 h-4  group-hover/btn:text-red-300",
-              getForeground(color || "")
+              getForeground(color || ""),
             )}
           />
         </Button>

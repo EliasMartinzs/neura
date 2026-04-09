@@ -38,7 +38,7 @@ export const QuizAbandoned = ({ sessionId }: { sessionId: string }) => {
       </div>
 
       <div className="w-full flex items-center justify-center">
-        <Button variant={"gradientLife"} size={"lg"} onClick={handleReset}>
+        <Button size={"lg"} onClick={handleReset}>
           {isPending ? (
             <Loader2 className="animate-spin size-5" />
           ) : (

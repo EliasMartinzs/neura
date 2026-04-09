@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
           toast.success("E-mail de verificação enviado!");
           setCooldown(30);
         },
-      }
+      },
     );
   }
 
@@ -56,10 +56,10 @@ export default function VerifyEmailPage() {
 
         <Button
           variant={"outline"}
-          size={"full"}
           type="button"
           onClick={handleEmailVerification}
           disabled={cooldown > 0}
+          className="w-full"
         >
           {cooldown > 0 ? `Reenviar em ${cooldown}s` : "Reenviar e-mail"}
         </Button>

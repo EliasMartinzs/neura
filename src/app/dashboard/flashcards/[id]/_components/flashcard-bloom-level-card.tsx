@@ -1,12 +1,22 @@
 export const FlashcardBloomLevelCard = ({
   bloomLevel,
 }: {
-  bloomLevel: {
+  bloomLevel?: {
     label: string;
     icon: string;
     description: string;
-  };
+  } | undefined;
 }) => {
+  if (!bloomLevel) {
+    return (
+      <div className="backdrop-blur-sm overflow-hidden dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border rounded-4xl py-6 text-white">
+        <div className="p-6 space-y-3">
+          <p className="text-sm text-muted-foreground">Nível Bloom não definido</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="backdrop-blur-sm overflow-hidden dark:bg-none bg-linear-to-br from-slate-700 via-slate-600 to-slate-700 border rounded-4xl py-6 text-white">
       <div className="p-6 space-y-3">

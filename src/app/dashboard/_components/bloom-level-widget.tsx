@@ -62,23 +62,17 @@ export const BloomLevelWidgetComponent = ({ bloomData }: Props) => {
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
 
-  if (!bloomData) {
-    return null;
-  }
-
   const enrichedData = useMemo(() => {
+    if (!bloomData) return [];
     return bloomData.map((data) => {
       const level = bloomLevels.find((l) => l.value === data.level);
       return { ...data, ...level };
     });
   }, [bloomData]);
 
-  if (!enrichedData.length) {
-    return null;
-  }
-
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDesktop(mediaQuery.matches);
 
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
@@ -86,7 +80,7 @@ export const BloomLevelWidgetComponent = ({ bloomData }: Props) => {
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
-  if (isDesktop === null) {
+  if (!bloomData || enrichedData.length === 0 || isDesktop === null) {
     return null;
   }
 

@@ -38,6 +38,7 @@ export const DeckSearchedFlashcard = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredFlashcards.map((flashcard) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const allGrades = flashcard.reviews.map((r: any) => r.grade);
             const averageGrade =
               allGrades.length > 0

@@ -1,5 +1,6 @@
 import { CreateFlashcardButton } from "@/app/dashboard/flashcards/_components/create-flashcard-button";
 import { Button } from "@/components/ui/button";
+import { getForeground } from "@/constants/circle-colors";
 import { DIFFICULTY } from "@/constants/difficulty";
 import { ResponseGetDecks } from "@/features/deck/api/use-get-decks";
 import { DeckDifficulty } from "@prisma/client";
@@ -13,7 +14,6 @@ import {
   Flame,
   Play,
   Plus,
-  RotateCcw,
   Tag,
   Target,
   Trash,
@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { EditDeckButton } from "../../_components/edit-deck-button";
 import { MoveTrashButton } from "../../_components/move-trash-button";
-import { getForeground } from "@/constants/circle-colors";
 
 type Deck = NonNullable<NonNullable<ResponseGetDecks>["data"]>[number];
 
@@ -76,7 +75,6 @@ export const DeckCard = ({
           <div className="absolute top-6 right-6 flex items-center gap-2">
             <Button
               size={"lg"}
-              variant="icon"
               className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:rotate-12 border border-white/20 shadow-lg group"
               onClick={handleStartStudy}
               disabled={flashcards.length === 0}
@@ -101,7 +99,6 @@ export const DeckCard = ({
               trigger={
                 <Button
                   size={"lg"}
-                  variant="icon"
                   className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
                 >
                   <Edit className="w-5 h-5 group-hover:text-green-100 " />
@@ -115,7 +112,6 @@ export const DeckCard = ({
               trigger={
                 <Button
                   size={"lg"}
-                  variant="icon"
                   className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
                 >
                   <Trash className="w-5 h-5 group-hover:text-green-100 " />
@@ -128,7 +124,6 @@ export const DeckCard = ({
               trigger={
                 <Button
                   size={"lg"}
-                  variant="icon"
                   className="p-3 bg-white/15 backdrop-blur-xl rounded-xl hover:bg-green-500/30 transition-all duration-300 hover:scale-110 hover:-rotate-12 border border-white/20 shadow-lg group"
                 >
                   <Plus className="w-5 h-5 group-hover:text-green-100 " />

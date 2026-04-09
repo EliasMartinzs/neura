@@ -17,12 +17,12 @@ export const FlashcardDetail = ({
   isFlipped,
   setIsFlipped,
 }: {
-  flashcard: Flashcard;
+  flashcard?: Flashcard | null;
   showDiff?: boolean;
   setIsFlipped: (prev: boolean) => void;
   isFlipped: boolean;
 }) => {
-  const { bloomLevelConfig, difficultyConfig } = useHelperFlashcard(flashcard);
+  const { bloomLevelConfig, difficultyConfig } = useHelperFlashcard(flashcard ?? null);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);

@@ -15,13 +15,17 @@ type Card = NonNullable<
   NonNullable<ResponseUseGetReviews>["data"]
 >["today"][number];
 
+type FlashcardArray = NonNullable<
+  NonNullable<ResponseUseGetReviews>["data"]
+>["today"];
+
 type Column = {
   id: string;
   title: string;
   subtitle: string;
   icon: LucideIcon;
   count: number;
-  cards: any;
+  cards?: FlashcardArray;
   gradient: string;
   bgGradient: string;
   glowColor: string;

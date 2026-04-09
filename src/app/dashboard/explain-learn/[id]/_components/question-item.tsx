@@ -16,6 +16,7 @@ type Props = {
     setShowInput: (prev: boolean) => void;
     expandedId: string | null;
     setExpandedId: (prev: string | null) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getDifficultyConfig: (difficulty: any) => {
       bg: string;
       text: string;
@@ -27,6 +28,7 @@ type Props = {
       label: string;
       icon: LucideIcon;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     formatDate: (dateString: any) => string;
   };
 };

@@ -43,8 +43,13 @@ const buildStandartAj = () =>
 export const standardSecurityMiddleware = createMiddleware<{
   Variables: AppVariables;
 }>(async (c, next) => {
+  const userId = c.get("user")?.id;
+  if (!userId) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+  
   const decision = await buildStandartAj().protect(c.req, {
-    userId: c.get("user")?.id!,
+    userId,
   });
 
   if (decision.isDenied()) {

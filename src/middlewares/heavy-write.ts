@@ -35,11 +35,17 @@ const buildStandartAj = () =>
 export const heavyWriteSecurityMiddleware = createMiddleware<{
   Variables: AppVariables;
 }>(async (c, next) => {
+  const userId = c.get("user")?.id;
+  if (!userId) {
+    return c.json({ message: "Unauthorized" }, 401);
+  }
+  
   const decision = await buildStandartAj().protect(c.req, {
-    userId: c.get("user")?.id!,
+    userId,
   });
 
   let message = "";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let remaining = 0;
 
   if (decision.reason.isRateLimit()) {

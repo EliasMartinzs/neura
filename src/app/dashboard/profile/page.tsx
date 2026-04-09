@@ -22,19 +22,19 @@ import {
   Zap,
 } from "lucide-react";
 
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { ChangeImageProfile } from "./_components/change-image-profile";
 import { DeleteAccountButton } from "./_components/delete-account-button";
 import { EditProfile } from "./_components/edit-profile";
 
+import { Button } from "@/components/ui/button";
 import { ACTIVITY_ICONS, ActivityIconType } from "@/constants/activity";
 import useProfile from "@/features/profile/api/use-profile";
+import { useDashboard } from "@/features/session/api/use-dashboard";
 import { EmptyState } from "@/lib/query/empty-state";
 import { ErrorState } from "@/lib/query/error-state";
 import { LoadingState } from "@/lib/query/loading-state";
-import { useDashboard } from "@/features/session/api/use-dashboard";
 import { StudyHeatmapWidget } from "../_components/study-heatmap-widget";
-import { Button } from "@/components/ui/button";
 
 type MostStudiedCategory = {
   tag: string;
@@ -158,7 +158,7 @@ export default function ProfilePage() {
           />
         </div>
 
-        <StudyHeatmapWidget dailyStudy={data?.data?.dailyStudy!} />
+        <StudyHeatmapWidget dailyStudy={data?.data?.dailyStudy} />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -267,7 +267,7 @@ export default function ProfilePage() {
                   <p>Nenhuma tag adicionada</p>
                 ) : (
                   Array.isArray(
-                    stats?.mostStudiedCategories as MostStudiedCategory[]
+                    stats?.mostStudiedCategories as MostStudiedCategory[],
                   ) &&
                   (stats?.mostStudiedCategories as MostStudiedCategory[])
                     .slice(0, showTags)
@@ -331,7 +331,7 @@ export default function ProfilePage() {
                   emoji="⚡"
                   title="Mente Afiada"
                   description={`${stats?.accuracyRateCards.toFixed(
-                    2
+                    2,
                   )}% de acertos`}
                   gradient="from-green-500 to-emerald-500"
                 />
@@ -369,7 +369,17 @@ export default function ProfilePage() {
   );
 }
 
-function HeroStat({ icon, value, label, color }: any) {
+function HeroStat({
+  icon,
+  value,
+  label,
+  color,
+}: {
+  icon: JSX.Element;
+  value: string | number;
+  label: string;
+  color: string;
+}) {
   return (
     <div className="relative group">
       <div
@@ -388,7 +398,19 @@ function HeroStat({ icon, value, label, color }: any) {
   );
 }
 
-function StatBox({ icon, label, value, bgColor, borderColor }: any) {
+function StatBox({
+  icon,
+  label,
+  value,
+  bgColor,
+  borderColor,
+}: {
+  icon: JSX.Element;
+  label: string;
+  value: number | string;
+  bgColor: string;
+  borderColor: string;
+}) {
   return (
     <div
       className={`${bgColor} border ${borderColor} rounded-xl p-5 hover:scale-105 transition-transform`}
@@ -435,7 +457,17 @@ function ActivityItem({
   );
 }
 
-function Achievement({ emoji, title, description, gradient }: any) {
+function Achievement({
+  emoji,
+  title,
+  description,
+  gradient,
+}: {
+  emoji: string;
+  title: string;
+  description: string;
+  gradient: string;
+}) {
   return (
     <div className="relative group">
       <div

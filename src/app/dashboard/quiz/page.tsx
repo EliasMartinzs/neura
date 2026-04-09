@@ -5,11 +5,7 @@ import { Title } from "@/components/shared/title";
 import { useGetQuizs } from "@/features/quiz/api/use-get-quizs";
 import { useQuizFilterStore } from "@/features/quiz/hooks/use-quiz-filter-store";
 import { useQuizStats } from "@/features/quiz/hooks/use-quiz-stats";
-import { EmptyState } from "@/lib/query/empty-state";
-import { ErrorState } from "@/lib/query/error-state";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
+import { getQueryState } from "@/lib/query/use-query-state";
 import { CreateQuizButton } from "./_components/create-quiz-button";
 import { QuizFilters } from "./_components/quiz-filters";
 import { QuizList } from "./_components/quiz-list";
@@ -24,56 +20,76 @@ export default function QuizPage() {
     perPage,
   });
 
+  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+
+  const quizzes = data?.data ?? [];
+  const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
+
+  const {
+    calculateScore,
+    calculateAccuracy,
+    totalCorrect,
+    totalQuestions,
+    avgAccuracy,
+    totalCompleted,
+  } = useQuizStats(quizzes, filter);
+
   return (
-    <QueryState
-      query={query}
-      loading={<LoadingState />}
-      error={({ refetch }) => <ErrorState onRetry={refetch} />}
-      fetchingIndicator={<FetchingIndicatorState />}
-    >
-      {(data) => {
-        const quizzes = data?.data ?? [];
+    <div className="max-w-7xl mx-auto space-y-6">
+      <Title>Quiz</Title>
 
-        const {
-          calculateScore,
-          calculateAccuracy,
-          totalCorrect,
-          totalQuestions,
-          avgAccuracy,
-          totalCompleted,
-        } = useQuizStats(quizzes, filter);
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="animate-spin w-7 h-7 border-2 border-muted border-t-primary rounded-full" />
+        </div>
+      )}
 
-        return (
-          <div className="max-w-7xl mx-auto space-y-6">
-            <Title>Quiz</Title>
+      {isError && (
+        <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
+          <p className="text-muted-foreground">Ocorreu um erro ao carregar os quizzes.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
 
-            <QuizStats
-              total={data?.data?.length ?? 0}
-              avgAccuracy={avgAccuracy}
-              totalCompleted={totalCompleted}
-              totalCorrect={totalCorrect}
-              totalQuestions={totalQuestions}
-            />
+      {!isLoading && !isError && (
+        <>
+          {isFetching && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className="animate-spin w-5 h-5 border-2 border-muted border-t-primary rounded-full" />
+            </div>
+          )}
 
-            <QuizFilters />
+          <QuizStats
+            total={quizzes.length}
+            avgAccuracy={avgAccuracy}
+            totalCompleted={totalCompleted}
+            totalCorrect={totalCorrect}
+            totalQuestions={totalQuestions}
+          />
 
-            <QuizDocumentation />
+          <QuizFilters />
 
-            <QuizList
-              calculateAccuracy={calculateAccuracy}
-              calculateScore={calculateScore}
-              filteredQuizzes={quizzes}
-              totalCompleted={totalCompleted}
-            />
+          <QuizDocumentation />
 
-            <PaginationComponent
-              page={page}
-              setPage={setPage}
-              totalPages={"totalPages" in data ? data.totalPages : 0}
-            />
-          </div>
-        );
-      }}
-    </QueryState>
+          <QuizList
+            calculateAccuracy={calculateAccuracy}
+            calculateScore={calculateScore}
+            filteredQuizzes={quizzes}
+            totalCompleted={totalCompleted}
+          />
+
+          <PaginationComponent
+            page={page}
+            setPage={setPage}
+            totalPages={totalPages}
+          />
+        </>
+      )}
+    </div>
   );
 }

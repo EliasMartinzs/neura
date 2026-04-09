@@ -1,8 +1,7 @@
 import { useGetAllTags } from "@/features/deck/api/use-get-tags";
 import { useDeckFilterStore } from "@/features/deck/store/use-deck-filter-store";
 import { useTrashStore } from "@/features/deck/store/use-trash-store";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
+import { getQueryState } from "@/lib/query/use-query-state";
 import {
   ArrowDown01,
   BookmarkX,
@@ -15,7 +14,6 @@ import {
 import { Tooltip } from "@/components/shared/tooltip";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
-import { ErrorState } from "@/lib/query/error-state";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,27 +29,47 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
 import { cn } from "@/lib/utils";
 import { CreateDeckButton } from "./create-deck-button";
 import { OpenDeckDocumentation } from "./open-deck-documentation";
 
 export const DeckToolbar = () => {
   const query = useGetAllTags();
+  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
 
   const { tags, toggleTag, reset, setPerPage, perPage, search, setSearch } =
     useDeckFilterStore();
   const { onOpen } = useTrashStore();
 
+  const allTags = data?.data ?? [];
+
   return (
     <div>
-      <QueryState
-        query={query}
-        loading={<LoadingState />}
-        error={({ refetch }) => <ErrorState onRetry={refetch} />}
-        fetchingIndicator={<FetchingIndicatorState />}
-      >
-        {(data) => (
+      {isLoading && (
+        <div className="flex items-center justify-center p-2">
+          <div className="animate-spin w-5 h-5 border-2 border-muted border-t-primary rounded-full" />
+        </div>
+      )}
+
+      {isError && (
+        <div className="flex items-center justify-center p-2">
+          <button
+            onClick={() => refetch()}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !isError && (
+        <>
+          {isFetching && (
+            <div className="absolute top-2 right-2">
+              <div className="animate-spin w-4 h-4 border border-muted border-t-primary rounded-full" />
+            </div>
+          )}
+
           <div className="flex">
             <CreateDeckButton />
 
@@ -96,7 +114,7 @@ export const DeckToolbar = () => {
             </Sheet>
 
             <Select>
-              <SelectTrigger disabled={!data?.data?.length}></SelectTrigger>
+              <SelectTrigger disabled={!allTags.length}></SelectTrigger>
               <SelectContent></SelectContent>
             </Select>
 
@@ -113,12 +131,12 @@ export const DeckToolbar = () => {
               </PopoverTrigger>
               <PopoverContent className="w-fit">
                 <div className="">
-                  {data?.data?.map((tag) => (
+                  {allTags.map((tag) => (
                     <p
                       key={tag}
                       onClick={() => toggleTag(tag)}
                       className={cn(
-                        "flex items-center gap-x-4 text-muted-foreground",
+                        "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
                         tags.includes(tag) && "text-foreground"
                       )}
                     >
@@ -148,7 +166,7 @@ export const DeckToolbar = () => {
                     <p
                       key={page}
                       className={cn(
-                        "flex items-center gap-x-4 text-muted-foreground",
+                        "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
                         perPage === page && "text-foreground"
                       )}
                       onClick={() => setPerPage(page)}
@@ -186,8 +204,8 @@ export const DeckToolbar = () => {
               content={<p className="text-sm">Minha lixeira</p>}
             />
           </div>
-        )}
-      </QueryState>
+        </>
+      )}
     </div>
   );
 };

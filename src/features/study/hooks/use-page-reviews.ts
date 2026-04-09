@@ -5,7 +5,7 @@ import { ResponseUseGetReviews } from "../api/use-get-reviews";
 type Flashcard = NonNullable<ResponseUseGetReviews>["data"];
 
 type Props = {
-  data: Flashcard;
+  data?: Flashcard | null;
 };
 
 export const usePageReviews = ({ data }: Props) => {

@@ -4,10 +4,6 @@ import * as motion from "motion/react-client";
 
 import { Button } from "@/components/ui/button";
 
-import { Diamond, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -18,10 +14,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { SignUpForm, signUpSchema } from "@/schemas/sign-up.schema";
 import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
+import { SignUpForm, signUpSchema } from "@/schemas/sign-up.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Diamond, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function SignUp() {
   const router = useRouter();
@@ -128,7 +128,7 @@ export default function SignUp() {
               </FormItem>
             )}
           />
-          <Button type="submit" size="full" disabled={isSubmitting}>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <Loader2 className="size-5 animate-spin" />
             ) : (

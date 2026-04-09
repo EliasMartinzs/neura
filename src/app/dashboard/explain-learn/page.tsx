@@ -6,12 +6,9 @@ import { PaginationComponent } from "@/components/shared/pagination-component";
 import { Input } from "@/components/ui/input";
 import { useGetExplainQuestions } from "@/features/explain-learn/api/use-get-explain-questions";
 import { useExplainQuestionsFiltersStore } from "@/features/explain-learn/hooks/use-explain-filters-store";
-import { ErrorState } from "@/lib/query/error-state";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
+import { getQueryState } from "@/lib/query/use-query-state";
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { QuestionCard } from "./[id]/_components/question-card";
 import { QuestionFilters } from "./[id]/_components/question-filters";
 import { QuestionStats } from "./[id]/_components/question-stats";
@@ -28,10 +25,18 @@ export default function ExplainLearnPage() {
     perPage,
   });
 
+  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+
   const stats =
-    query.data && "stats" in query.data
-      ? query.data.stats
+    data && "stats" in data
+      ? data.stats
       : { completed: 0, pending: 0, avg: 0, total: 0 };
+
+  const filteredData = data?.data?.filter((item) =>
+    item.topic.toLowerCase().includes(searchTerm)
+  ) ?? [];
+
+  const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
 
   return (
     <main className="space-y-10 max-w-7xl mx-auto relative z-10">
@@ -53,34 +58,41 @@ export default function ExplainLearnPage() {
         <Search className="size-5 absolute left-3 text-white" />
       </div>
 
-      <QueryState
-        query={query}
-        loading={<LoadingState />}
-        error={({ refetch }) => <ErrorState onRetry={refetch} />}
-        fetchingIndicator={<FetchingIndicatorState />}
-      >
-        {(data) => {
-          const filteredData = useMemo(() => {
-            return (
-              data.data?.filter((item) =>
-                item.topic.toLowerCase().includes(searchTerm)
-              ) ?? []
-            );
-          }, [data.data, searchTerm]);
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="animate-spin w-7 h-7 border-2 border-muted border-t-primary rounded-full" />
+        </div>
+      )}
 
-          return (
-            <>
-              <QuestionCard data={filteredData} />
+      {isError && (
+        <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
+          <p className="text-muted-foreground">Ocorreu um erro ao carregar as perguntas.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
 
-              <PaginationComponent
-                page={page}
-                setPage={setPage}
-                totalPages={"totalPages" in data ? data.totalPages : 0}
-              />
-            </>
-          );
-        }}
-      </QueryState>
+      {!isLoading && !isError && (
+        <>
+          {isFetching && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className="animate-spin w-5 h-5 border-2 border-muted border-t-primary rounded-full" />
+            </div>
+          )}
+
+          <QuestionCard data={filteredData} />
+
+          <PaginationComponent
+            page={page}
+            setPage={setPage}
+            totalPages={totalPages}
+          />
+        </>
+      )}
     </main>
   );
 }

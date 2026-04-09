@@ -31,7 +31,7 @@ type Props = {
   } | null;
   IconScore: LucideIcon | undefined;
   isExpanded: boolean;
-  formatDate: (dateString: any) => string;
+  formatDate: (dateString: string) => string;
 };
 
 export const QuestionItemHeader = ({

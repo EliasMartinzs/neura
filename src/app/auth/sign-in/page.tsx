@@ -1,13 +1,9 @@
 "use client";
 
-import * as motion from "motion/react-client";
 import { Button } from "@/components/ui/button";
+import * as motion from "motion/react-client";
 
-import { SignInForm, signInSchema } from "@/schemas/sign-in.schema";
-import { Diamond, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -19,9 +15,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { authClient } from "@/lib/auth-client";
-import { toast } from "sonner";
-import { Checkbox } from "@/components/ui/checkbox";
+import { SignInForm, signInSchema } from "@/schemas/sign-in.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Diamond, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export default function SignIn() {
   const router = useRouter();
@@ -125,7 +125,7 @@ export default function SignIn() {
             )}
           />
 
-          <Button type="submit" size="full">
+          <Button type="submit" className="w-full">
             {form.formState.isSubmitting ? (
               <Loader2 className="size-5 animate-spin" />
             ) : (

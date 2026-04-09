@@ -4,10 +4,7 @@ import { PaginationComponent } from "@/components/shared/pagination-component";
 import { Title } from "@/components/shared/title";
 import { useGetFlashcards } from "@/features/flashcard/api/use-get-flashcards";
 import { useFlashcardFiltersStore } from "@/features/flashcard/hooks/use-flashcard-filters-store";
-import { ErrorState } from "@/lib/query/error-state";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
+import { getQueryState } from "@/lib/query/use-query-state";
 import { Suspense } from "react";
 import { FlashcardsDocumentation } from "./_components/flashcard-documentation";
 import { Flashcards } from "./_components/flashcards";
@@ -21,6 +18,11 @@ export default function FlashcardPage() {
     perPage: perPage,
   });
 
+  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+
+  const flashcards = data?.data ?? [];
+  const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
+
   return (
     <main className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
@@ -33,26 +35,43 @@ export default function FlashcardPage() {
 
       <FlashcardsDocumentation />
 
-      <QueryState
-        query={query}
-        loading={<LoadingState />}
-        error={({ refetch }) => <ErrorState onRetry={refetch} />}
-        fetchingIndicator={<FetchingIndicatorState />}
-      >
-        {(data) => (
-          <>
-            <Flashcards flashcards={data.data} />
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="animate-spin w-7 h-7 border-2 border-muted border-t-primary rounded-full" />
+        </div>
+      )}
 
-            {data.data?.length ? (
-              <PaginationComponent
-                page={page}
-                totalPages={"totalPages" in data ? data.totalPages : 0}
-                setPage={setPage}
-              />
-            ) : null}
-          </>
-        )}
-      </QueryState>
+      {isError && (
+        <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
+          <p className="text-muted-foreground">Ocorreu um erro ao carregar os flashcards.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !isError && (
+        <>
+          {isFetching && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className="animate-spin w-5 h-5 border-2 border-muted border-t-primary rounded-full" />
+            </div>
+          )}
+
+          <Flashcards flashcards={flashcards} />
+
+          {flashcards.length > 0 && (
+            <PaginationComponent
+              page={page}
+              totalPages={totalPages}
+              setPage={setPage}
+            />
+          )}
+        </>
+      )}
     </main>
   );
 }

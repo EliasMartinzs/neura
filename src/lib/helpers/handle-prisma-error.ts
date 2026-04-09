@@ -3,6 +3,7 @@ import { Context } from "hono";
 
 export function handlePrismaError(
   c: Context<{ Variables: AppVariables }>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
 ) {
   console.error(error);

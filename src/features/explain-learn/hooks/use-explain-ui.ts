@@ -58,7 +58,7 @@ function _getScoreConfig(score: number) {
   };
 }
 
-function _formatDate(dateString: any) {
+function _formatDate(dateString: string) {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
@@ -72,9 +72,40 @@ export function useExplainUI() {
   const [showInput, setShowInput] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const getDifficultyConfig = useCallback(_getDifficultyConfig, []);
-  const getScoreConfig = useCallback(_getScoreConfig, []);
-  const formatDate = useCallback(_formatDate, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getDifficultyConfig = useCallback(
+    (difficulty: "easy" | "medium" | "hard") =>
+      difficultyConfigs[difficulty] ?? difficultyConfigs.easy,
+    []
+  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getScoreConfig = useCallback(
+    (score: number) => {
+      for (const cfg of scoreConfigs) {
+        if (score >= cfg.min) return cfg;
+      }
+      return {
+        color: "from-rose-400 to-pink-500",
+        label: "Pode Melhorar",
+        icon: Target,
+      };
+    },
+    []
+  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const formatDate = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (dateString: any) => {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+    },
+    []
+  );
 
   return useMemo(
     () => ({

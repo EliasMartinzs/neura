@@ -666,7 +666,7 @@ const app = new Hono<{
             return acc;
           }, {} as Record<string, number>);
 
-          for (const [level, count] of Object.entries(grouped)) {
+          for (const [level, _count] of Object.entries(grouped)) {
             await decrementBloomLevel({
               client: tx,
               userId: user!.id,

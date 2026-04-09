@@ -341,30 +341,20 @@ export const QuizForm = () => {
 
           <div className="flex items-center gap-x-3 justify-center pt-8">
             {step === 2 && (
-              <Button
-                variant={"gradientLife"}
-                size={"lg"}
-                type="button"
-                onClick={handlePrev}
-              >
+              <Button size={"lg"} type="button" onClick={handlePrev}>
                 <ArrowLeft className="size-5 group-hover:translate-x-1 transition-transform" />
                 Voltar
               </Button>
             )}
             {step === 1 && (
-              <Button
-                variant={"gradientLife"}
-                size={"lg"}
-                type="button"
-                onClick={handleNext}
-              >
+              <Button size={"lg"} type="button" onClick={handleNext}>
                 Proximo
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             )}
 
             {step === 2 && (
-              <Button variant={"gradientLife"} size={"lg"} type="submit">
+              <Button size={"lg"} type="submit">
                 Inciar Quiz
                 <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
               </Button>

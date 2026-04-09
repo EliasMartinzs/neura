@@ -6,7 +6,7 @@ import { memo } from "react";
 type Flashcard = NonNullable<ResponseUseGetReviews>["data"];
 
 type Props = {
-  data: Flashcard;
+  data?: Flashcard | null;
 };
 
 const ReviewOverviewComponent = ({ data }: Props) => {

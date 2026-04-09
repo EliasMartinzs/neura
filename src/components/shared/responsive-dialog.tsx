@@ -45,6 +45,7 @@ export const ResponsiveDialog = ({
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px)");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDesktop(mediaQuery.matches);
 
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);

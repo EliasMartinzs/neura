@@ -62,18 +62,15 @@ type Props = {
 export function TopTagsWidgetComponent({ topTags }: Props) {
   const [selectedTag, setSelectedTag] = useState<number>(0);
 
-  if (!topTags) {
-    return null;
-  }
-
   const tags = useMemo(() => {
+    if (!topTags) return [];
     return topTags.map((item) => ({
       tag: item.tag || item,
       count: item.count || 0,
     }));
   }, [topTags]);
 
-  if (!tags.length) {
+  if (!topTags || !tags.length) {
     return null;
   }
 

@@ -1,8 +1,8 @@
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { DeleteFlashcardButton } from "./delete-flashcard-button";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { memo } from "react";
+import { DeleteFlashcardButton } from "./delete-flashcard-button";
 
 const ActionsButtonsComponent = ({
   router,
@@ -17,7 +17,6 @@ const ActionsButtonsComponent = ({
     <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
       <DeleteFlashcardButton color={color || ""} id={id} />
       <Button
-        variant={"icon"}
         title="Ver detalhes completos"
         onClick={(e) => {
           e.stopPropagation();

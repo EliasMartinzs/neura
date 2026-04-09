@@ -3,11 +3,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 
 import { useGetDeckNames } from "@/features/deck/api/use-get-deck-names";
 import { useFlashcardFiltersStore } from "@/features/flashcard/hooks/use-flashcard-filters-store";
-import { EmptyState } from "@/lib/query/empty-state";
-import { ErrorState } from "@/lib/query/error-state";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
+import { getQueryState } from "@/lib/query/use-query-state";
 
 import {
   Popover,
@@ -26,16 +22,38 @@ export const FlashcardsToolbar = () => {
     hasFlashcard: true,
   });
 
+  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+
+  const decks = data?.data ?? [];
+
   return (
     <div className="space-y-6">
       <div className="w-full flex max-sm:flex-col gap-4 justify-between">
-        <QueryState
-          query={query}
-          loading={<LoadingState />}
-          error={({ refetch }) => <ErrorState onRetry={refetch} />}
-          fetchingIndicator={<FetchingIndicatorState />}
-        >
-          {(data) => (
+        {isLoading && (
+          <div className="flex items-center justify-center p-2">
+            <div className="animate-spin w-5 h-5 border-2 border-muted border-t-primary rounded-full" />
+          </div>
+        )}
+
+        {isError && (
+          <div className="flex items-center justify-center p-2">
+            <button
+              onClick={() => refetch()}
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && (
+          <>
+            {isFetching && (
+              <div className="absolute top-2 right-2">
+                <div className="animate-spin w-4 h-4 border border-muted border-t-primary rounded-full" />
+              </div>
+            )}
+
             <div className="flex">
               <CreateFlashcardButton
                 trigger={
@@ -58,16 +76,16 @@ export const FlashcardsToolbar = () => {
                         <Funnel className="size-5 text-muted-foreground hover:text-foreground transition-colors duration-200" />
                       </div>
                     }
-                    content={<p className="text-sm">Filtrar por tags</p>}
+                    content={<p className="text-sm">Filtrar por deck</p>}
                   />
                 </PopoverTrigger>
                 <PopoverContent className="w-fit">
-                  {data?.data?.map((d) => (
+                  {decks.map((d) => (
                     <p
                       key={d.id}
                       onClick={() => onSet(d.name)}
                       className={cn(
-                        "flex items-center gap-x-4 text-muted-foreground",
+                        "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
                         deck === d.name && "text-foreground"
                       )}
                     >
@@ -96,7 +114,7 @@ export const FlashcardsToolbar = () => {
                       <p
                         key={page}
                         className={cn(
-                          "flex items-center gap-x-4 text-muted-foreground",
+                          "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
                           perPage === page && "text-foreground"
                         )}
                         onClick={() => setPerPage(page)}
@@ -122,8 +140,8 @@ export const FlashcardsToolbar = () => {
                 content={<p className="text-sm">Limpar filtros</p>}
               />
             </div>
-          )}
-        </QueryState>
+          </>
+        )}
       </div>
     </div>
   );

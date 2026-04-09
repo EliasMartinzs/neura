@@ -5,10 +5,7 @@ import { Title } from "@/components/shared/title";
 import { useGetDecks } from "@/features/deck/api/use-get-decks";
 import { useDeckFilterStore } from "@/features/deck/store/use-deck-filter-store";
 import { useDebounce } from "@/hooks/use-debounce";
-import { ErrorState } from "@/lib/query/error-state";
-import { FetchingIndicatorState } from "@/lib/query/fetching-indicatror-state";
-import { LoadingState } from "@/lib/query/loading-state";
-import { QueryState } from "@/lib/query/query-state";
+import { getQueryState } from "@/lib/query/use-query-state";
 import { Suspense } from "react";
 import { DeckDocumentation } from "./_components/deck-documentation";
 import { DeckToolbar } from "./_components/deck-toolbar";
@@ -26,6 +23,11 @@ export default function DeckPage() {
     search: debouncedSearch || undefined,
   });
 
+  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+
+  const decks = data?.data ?? [];
+  const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
+
   return (
     <main className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
@@ -37,30 +39,43 @@ export default function DeckPage() {
 
       <DeckDocumentation />
 
-      <QueryState
-        query={query}
-        loading={<LoadingState />}
-        error={({ refetch }) => <ErrorState onRetry={refetch} />}
-        fetchingIndicator={<FetchingIndicatorState />}
-      >
-        {(data) => {
-          const totalPage = "totalPages" in data ? data.totalPages : 0;
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="animate-spin w-7 h-7 border-2 border-muted border-t-primary rounded-full" />
+        </div>
+      )}
 
-          return (
-            <>
-              <Decks decks={data.data} />
+      {isError && (
+        <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
+          <p className="text-muted-foreground">Ocorreu um erro ao carregar os decks.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
 
-              {data.data?.length ? (
-                <PaginationComponent
-                  page={page}
-                  setPage={setPage}
-                  totalPages={totalPage}
-                />
-              ) : null}
-            </>
-          );
-        }}
-      </QueryState>
+      {!isLoading && !isError && (
+        <>
+          {isFetching && (
+            <div className="fixed top-4 right-4 z-50">
+              <div className="animate-spin w-5 h-5 border-2 border-muted border-t-primary rounded-full" />
+            </div>
+          )}
+
+          <Decks decks={decks} />
+
+          {decks.length > 0 && (
+            <PaginationComponent
+              page={page}
+              setPage={setPage}
+              totalPages={totalPages}
+            />
+          )}
+        </>
+      )}
     </main>
   );
 }

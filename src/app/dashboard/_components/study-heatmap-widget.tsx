@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Calendar, TrendingUp, Award, Flame } from "lucide-react";
+import { TrendingUp, Award, Flame } from "lucide-react";
 
 interface DailyStudyActivity {
   date: string;
@@ -34,10 +34,9 @@ function toUTCDateString(date: Date) {
 export const StudyHeatmapWidget = ({ dailyStudy }: StudyHeatmapProps) => {
   const [hoveredDay, setHoveredDay] = useState<string | null>(null);
 
-  if (!dailyStudy) return [];
-
-  // Gera dados completos dos últimos 365 dias
   const studyData = useMemo<DailyStudyActivity[]>(() => {
+    if (!dailyStudy) return [];
+
     const data: DailyStudyActivity[] = [];
     const today = new Date();
     const startDate = new Date(today);
@@ -59,7 +58,6 @@ export const StudyHeatmapWidget = ({ dailyStudy }: StudyHeatmapProps) => {
     return data;
   }, [dailyStudy]);
 
-  // Estatísticas
   const stats = useMemo<StudyStats>(() => {
     const totalDays = studyData.filter((d) => d.count > 0).length;
     const totalActivities = studyData.reduce((sum, d) => sum + d.count, 0);
@@ -75,7 +73,6 @@ export const StudyHeatmapWidget = ({ dailyStudy }: StudyHeatmapProps) => {
     return { totalDays, totalActivities, streak, maxCount };
   }, [studyData]);
 
-  // Organiza semanas
   const weeks = useMemo<(DailyStudyActivity | null)[][]>(() => {
     if (studyData.length === 0) return [];
 
@@ -148,6 +145,8 @@ export const StudyHeatmapWidget = ({ dailyStudy }: StudyHeatmapProps) => {
 
     return labels;
   }, [studyData]);
+
+  if (!dailyStudy) return null;
 
   const activityCount =
     studyData.find((d) => d.date === hoveredDay)?.count ?? 0;

@@ -94,6 +94,7 @@ export const QuizSession = ({ data }: Props) => {
 
       // mostra alerta nativo
       e.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (e as any).returnValue = "";
     };
 
@@ -109,6 +110,7 @@ export const QuizSession = ({ data }: Props) => {
   const { mutate: mutateQuestion, isPending: questionPending } =
     useStepQuestion();
   const { mutate: mutateAnswer, isPending: answerPending } = useStepAnswer(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
     currentStep?.id!
   );
   const { mutate: mutateAbandoned } = useUpdateToAbandoned();

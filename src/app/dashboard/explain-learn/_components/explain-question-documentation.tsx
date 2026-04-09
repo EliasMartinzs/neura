@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { useExplainDocumentation } from "@/features/explain-learn/hooks/use-explain-documentation";
 import { AnimatePresence } from "framer-motion";
 import {
@@ -178,7 +179,7 @@ const ExplainLearnDocumentationComponent = () => {
                           <span className="text-blue-400 font-bold shrink-0">
                             •
                           </span>
-                          <p className="text-slate-300 italic">"{q}"</p>
+                          <p className="text-slate-300 italic">&quot;{q}&quot;</p>
                         </div>
                       ))}
                     </div>
@@ -374,14 +375,14 @@ const ExplainLearnDocumentationComponent = () => {
                           <div className="mt-3 space-y-2">
                             <div className="bg-slate-800/50 rounded-lg p-3">
                               <p className="text-slate-300 text-sm italic">
-                                "Sua explicação está correta, mas faltou
-                                mencionar o papel da fila de microtasks."
+                                &quot;Sua explica&ccedil;&atilde;o est&aacute; correta, mas faltou
+                                mencionar o papel da fila de microtasks.&quot;
                               </p>
                             </div>
                             <div className="bg-slate-800/50 rounded-lg p-3">
                               <p className="text-slate-300 text-sm italic">
-                                "Ótima clareza! Mas você confundiu correlação
-                                com causalidade — a resposta ideal explica que A
+                                &quot;&&Oacute;tima clareza! Mas voc&ecirc; confundiu correla&ccedil;&atilde;o
+                                com causalidade &mdash; a resposta ideal explica que A
                                 pode não causar B."
                               </p>
                             </div>
@@ -526,4 +527,6 @@ const ExplainLearnDocumentationComponent = () => {
 export const ExplainQuestionDocumentation = memo(
   ExplainLearnDocumentationComponent
 );
+
+/* eslint-enable react/no-unescaped-entities */
 ExplainQuestionDocumentation.displayName = "ExplainQuestionDocumentation";

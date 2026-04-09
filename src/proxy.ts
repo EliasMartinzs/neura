@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 
 const publicRoutes = ["/auth/sign-in", "/auth/sign-up"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ignora rotas do Better Auth
   if (pathname.startsWith("/api/auth")) return NextResponse.next();
 
   const isPublicRoute = publicRoutes.includes(pathname);

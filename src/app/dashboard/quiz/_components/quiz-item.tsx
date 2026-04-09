@@ -20,9 +20,11 @@ import { DeleteQuizButton } from "./delete-quiz-button";
 
 type Quiz = NonNullable<ResponseGetQuiz["data"]>[number];
 
+type QuizScore = { correct: number; total: number };
+
 type Props = {
   quiz: Quiz;
-  score: any;
+  score: QuizScore;
   accuracy: number;
   getDifficultyBadge: (difficulty: $Enums.QuizDifficulty) => void;
 };
@@ -38,7 +40,7 @@ export type QuarterProgress = 25 | 50 | 75 | 100;
 
 export function getProgressColor(
   accuracy: number,
-  completedAt: string | null
+  completedAt: string | null,
 ): string {
   if (!completedAt) return "#475569";
 
@@ -89,7 +91,7 @@ const QuizItemComponent = ({
 
       router.push(href);
     },
-    []
+    [router],
   );
 
   return (
@@ -102,7 +104,7 @@ const QuizItemComponent = ({
 
             <span
               className={`px-3 py-1 rounded-lg text-xs font-semibold border ${getDifficultyBadge(
-                quiz.difficulty
+                quiz.difficulty,
               )}`}
             >
               {quiz.difficulty}
@@ -110,7 +112,7 @@ const QuizItemComponent = ({
 
             <span
               className={`px-3 py-1 rounded-lg text-xs font-semibold border ${getStatusBadge(
-                quiz.status
+                quiz.status,
               )}`}
             >
               {quiz.status}
@@ -124,10 +126,9 @@ const QuizItemComponent = ({
           <DeleteQuizButton id={quiz.id} />
 
           <Button
-            variant={"icon"}
             className={cn(
               "px-3 py-1 rounded-lg text-xs font-black border hover:scale-none",
-              quiz.status !== "ACTIVE" && "hidden"
+              quiz.status !== "ACTIVE" && "hidden",
             )}
             onClick={() =>
               handleResetQuiz({
@@ -175,8 +176,8 @@ const QuizItemComponent = ({
                 accuracy >= 70
                   ? "text-emerald-400"
                   : accuracy >= 50
-                  ? "text-yellow-400"
-                  : "text-red-400"
+                    ? "text-yellow-400"
+                    : "text-red-400"
               }`}
             >
               {accuracy}%
@@ -212,8 +213,8 @@ const QuizItemComponent = ({
                       step.isCorrect === true
                         ? "bg-emerald-500/20"
                         : step.isCorrect === false
-                        ? "bg-red-500/20"
-                        : "bg-slate-700/30"
+                          ? "bg-red-500/20"
+                          : "bg-slate-700/30"
                     }`}
                   >
                     {step.isCorrect === true ? (

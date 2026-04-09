@@ -1,14 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useBlockNavigation(enabled: boolean) {
   const router = useRouter();
   const [nextHref, setNextHref] = useState<string | null>(null);
-
-  const blockingRef = useRef(enabled);
-  blockingRef.current = enabled;
 
   //
   // 🔥 BLOQUEAR CLIQUES EM LINKS
