@@ -5,7 +5,6 @@ import { Title } from "@/components/shared/title";
 import { useGetDecks } from "@/features/deck/api/use-get-decks";
 import { useDeckFilterStore } from "@/features/deck/store/use-deck-filter-store";
 import { useDebounce } from "@/hooks/use-debounce";
-import { getQueryState } from "@/lib/query/use-query-state";
 import { Suspense } from "react";
 import { DeckDocumentation } from "./_components/deck-documentation";
 import { DeckToolbar } from "./_components/deck-toolbar";
@@ -16,14 +15,12 @@ export default function DeckPage() {
 
   const debouncedSearch = useDebounce(search, 400);
 
-  const query = useGetDecks({
+  const { isLoading, isError, data, refetch, isFetching } = useGetDecks({
     page,
     perPage,
     tags: tags.length > 0 ? tags : undefined,
     search: debouncedSearch || undefined,
   });
-
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
 
   const decks = data?.data ?? [];
   const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
@@ -47,7 +44,9 @@ export default function DeckPage() {
 
       {isError && (
         <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
-          <p className="text-muted-foreground">Ocorreu um erro ao carregar os decks.</p>
+          <p className="text-muted-foreground">
+            Ocorreu um erro ao carregar os decks.
+          </p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"

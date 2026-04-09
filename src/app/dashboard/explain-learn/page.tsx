@@ -6,7 +6,6 @@ import { PaginationComponent } from "@/components/shared/pagination-component";
 import { Input } from "@/components/ui/input";
 import { useGetExplainQuestions } from "@/features/explain-learn/api/use-get-explain-questions";
 import { useExplainQuestionsFiltersStore } from "@/features/explain-learn/hooks/use-explain-filters-store";
-import { getQueryState } from "@/lib/query/use-query-state";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { QuestionCard } from "./[id]/_components/question-card";
@@ -19,22 +18,22 @@ export default function ExplainLearnPage() {
   const { filter, page, perPage, setPage, setFilter } =
     useExplainQuestionsFiltersStore();
 
-  const query = useGetExplainQuestions({
-    page,
-    filter,
-    perPage,
-  });
-
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } =
+    useGetExplainQuestions({
+      page,
+      filter,
+      perPage,
+    });
 
   const stats =
     data && "stats" in data
       ? data.stats
       : { completed: 0, pending: 0, avg: 0, total: 0 };
 
-  const filteredData = data?.data?.filter((item) =>
-    item.topic.toLowerCase().includes(searchTerm)
-  ) ?? [];
+  const filteredData =
+    data?.data?.filter((item) =>
+      item.topic.toLowerCase().includes(searchTerm),
+    ) ?? [];
 
   const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
 
@@ -66,7 +65,9 @@ export default function ExplainLearnPage() {
 
       {isError && (
         <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
-          <p className="text-muted-foreground">Ocorreu um erro ao carregar as perguntas.</p>
+          <p className="text-muted-foreground">
+            Ocorreu um erro ao carregar as perguntas.
+          </p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"

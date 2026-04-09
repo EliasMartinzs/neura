@@ -1,15 +1,14 @@
-'use client';
+"use client";
 
-import { useDashboard } from '@/features/session/api/use-dashboard';
-import { getQueryState } from '@/lib/query/use-query-state';
-import { Loader2 } from 'lucide-react';
-import { StudiedCategory } from '@/utils/type';
-import { AccuracyWidget } from './_components/accuracy-widget';
-import { BloomLevelWidget } from './_components/bloom-level-widget';
-import { StatsWidget } from './_components/stats-widget';
-import { TodayReviewWidget } from './_components/today-review-widget';
-import { TopTagsWidget } from './_components/top-tags-widget';
-import { Title } from '@/components/shared/title';
+import { Title } from "@/components/shared/title";
+import { useDashboard } from "@/features/session/api/use-dashboard";
+import { StudiedCategory } from "@/utils/type";
+import { Loader2 } from "lucide-react";
+import { AccuracyWidget } from "./_components/accuracy-widget";
+import { BloomLevelWidget } from "./_components/bloom-level-widget";
+import { StatsWidget } from "./_components/stats-widget";
+import { TodayReviewWidget } from "./_components/today-review-widget";
+import { TopTagsWidget } from "./_components/top-tags-widget";
 
 type BloomStatus = {
   level: string;
@@ -17,8 +16,7 @@ type BloomStatus = {
 };
 
 export default function DashboardPage() {
-  const query = useDashboard();
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } = useDashboard();
 
   const stats = data?.data?.stats;
 
@@ -51,7 +49,9 @@ export default function DashboardPage() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-muted-foreground">Ocorreu um erro ao carregar os dados.</p>
+        <p className="text-muted-foreground">
+          Ocorreu um erro ao carregar os dados.
+        </p>
         <button
           onClick={() => refetch()}
           className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"

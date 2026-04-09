@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  ResponseFlashcard,
-  useGetFlashcard,
-} from "@/features/flashcard/api/use-get-flashcard";
+import { useGetFlashcard } from "@/features/flashcard/api/use-get-flashcard";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -11,7 +8,6 @@ import { useHelperFlashcard } from "@/hooks/use-helper-flashcard";
 
 import { BreadcrumbCustom } from "@/components/shared/breadcrumb-custom";
 import { FlashcardDetail } from "@/components/shared/flashcard-detail";
-import { getQueryState } from "@/lib/query/use-query-state";
 import { BloomLevel } from "@prisma/client";
 import { FlashcardBloomLevelCard } from "./_components/flashcard-bloom-level-card";
 import { FlashcardEaseFactorCard } from "./_components/flashcard-ease-factor-card";
@@ -24,13 +20,16 @@ export default function Flashcard() {
   const [showStats, setShowStats] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const query = useGetFlashcard(id);
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } = useGetFlashcard(id);
 
   const flashcard = data?.data;
 
-  const { bloomLevelConfig, getEaseFactorInfo, getPerformanceInfo, formatDate } =
-    useHelperFlashcard(flashcard ?? null);
+  const {
+    bloomLevelConfig,
+    getEaseFactorInfo,
+    getPerformanceInfo,
+    formatDate,
+  } = useHelperFlashcard(flashcard ?? null);
 
   const bloomLevel = flashcard?.bloomLevel
     ? bloomLevelConfig[flashcard.bloomLevel as BloomLevel]
@@ -55,7 +54,9 @@ export default function Flashcard() {
   if (isError || !flashcard) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-muted-foreground">Ocorreu um erro ao carregar o flashcard.</p>
+        <p className="text-muted-foreground">
+          Ocorreu um erro ao carregar o flashcard.
+        </p>
         <button
           onClick={() => refetch()}
           className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"

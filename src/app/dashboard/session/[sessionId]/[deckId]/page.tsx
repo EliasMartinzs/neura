@@ -5,11 +5,10 @@ import { CompletedCardReview } from "@/components/shared/completed-card-review";
 import { FlashcardDetail } from "@/components/shared/flashcard-detail";
 import { ReviewCardForm } from "@/components/shared/review-card-form";
 import { ScoreBadges } from "@/components/shared/score-badges";
+import { ResponseFlashcard } from "@/features/flashcard/api/use-get-flashcard";
 import { useGetSummary } from "@/features/study/api/use-get-summary";
-import { getQueryState } from "@/lib/query/use-query-state";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { ResponseFlashcard } from "@/features/flashcard/api/use-get-flashcard";
 
 type Flashcard = NonNullable<ResponseFlashcard>["data"];
 
@@ -20,19 +19,21 @@ export default function SessionPage() {
     deckId: string;
   }>();
 
-  const query = useGetSummary(sessionId);
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } =
+    useGetSummary(sessionId);
 
-  const sessionData = data as { 
-    completed?: boolean; 
-    nextCard?: Flashcard; 
-    accuracy?: number; 
-    correctCount?: number; 
-    wrongCount?: number;
-    deckTitle?: string;
-    reviewedFlashcards?: number;
-    totalFlashcards?: number;
-  } | undefined;
+  const sessionData = data as
+    | {
+        completed?: boolean;
+        nextCard?: Flashcard;
+        accuracy?: number;
+        correctCount?: number;
+        wrongCount?: number;
+        deckTitle?: string;
+        reviewedFlashcards?: number;
+        totalFlashcards?: number;
+      }
+    | undefined;
 
   if (isLoading) {
     return (
@@ -45,7 +46,9 @@ export default function SessionPage() {
   if (isError || !sessionData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-muted-foreground">Ocorreu um erro ao carregar a sessão.</p>
+        <p className="text-muted-foreground">
+          Ocorreu um erro ao carregar a sessão.
+        </p>
         <button
           onClick={() => refetch()}
           className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"

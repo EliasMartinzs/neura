@@ -5,22 +5,18 @@ import { Title } from "@/components/shared/title";
 import { useGetQuizs } from "@/features/quiz/api/use-get-quizs";
 import { useQuizFilterStore } from "@/features/quiz/hooks/use-quiz-filter-store";
 import { useQuizStats } from "@/features/quiz/hooks/use-quiz-stats";
-import { getQueryState } from "@/lib/query/use-query-state";
-import { CreateQuizButton } from "./_components/create-quiz-button";
+import { QuizDocumentation } from "./_components/quiz-documentation";
 import { QuizFilters } from "./_components/quiz-filters";
 import { QuizList } from "./_components/quiz-list";
 import { QuizStats } from "./_components/quiz-stats";
-import { QuizDocumentation } from "./_components/quiz-documentation";
 
 export default function QuizPage() {
   const { filter, page, perPage, setPage } = useQuizFilterStore();
-  const query = useGetQuizs({
+  const { isLoading, isError, data, refetch, isFetching } = useGetQuizs({
     filter,
     page,
     perPage,
   });
-
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
 
   const quizzes = data?.data ?? [];
   const totalPages = (data as { totalPages?: number })?.totalPages ?? 0;
@@ -46,7 +42,9 @@ export default function QuizPage() {
 
       {isError && (
         <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
-          <p className="text-muted-foreground">Ocorreu um erro ao carregar os quizzes.</p>
+          <p className="text-muted-foreground">
+            Ocorreu um erro ao carregar os quizzes.
+          </p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"

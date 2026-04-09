@@ -1,7 +1,6 @@
 import { useGetAllTags } from "@/features/deck/api/use-get-tags";
 import { useDeckFilterStore } from "@/features/deck/store/use-deck-filter-store";
 import { useTrashStore } from "@/features/deck/store/use-trash-store";
-import { getQueryState } from "@/lib/query/use-query-state";
 import {
   ArrowDown01,
   BookmarkX,
@@ -34,8 +33,7 @@ import { CreateDeckButton } from "./create-deck-button";
 import { OpenDeckDocumentation } from "./open-deck-documentation";
 
 export const DeckToolbar = () => {
-  const query = useGetAllTags();
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } = useGetAllTags();
 
   const { tags, toggleTag, reset, setPerPage, perPage, search, setSearch } =
     useDeckFilterStore();
@@ -137,7 +135,7 @@ export const DeckToolbar = () => {
                       onClick={() => toggleTag(tag)}
                       className={cn(
                         "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
-                        tags.includes(tag) && "text-foreground"
+                        tags.includes(tag) && "text-foreground",
                       )}
                     >
                       {tag}
@@ -167,7 +165,7 @@ export const DeckToolbar = () => {
                       key={page}
                       className={cn(
                         "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
-                        perPage === page && "text-foreground"
+                        perPage === page && "text-foreground",
                       )}
                       onClick={() => setPerPage(page)}
                     >

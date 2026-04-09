@@ -3,7 +3,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 
 import { useGetDeckNames } from "@/features/deck/api/use-get-deck-names";
 import { useFlashcardFiltersStore } from "@/features/flashcard/hooks/use-flashcard-filters-store";
-import { getQueryState } from "@/lib/query/use-query-state";
 
 import {
   Popover,
@@ -18,11 +17,9 @@ import { OpenFlashcardDocumentation } from "./open-flashcard-documentation";
 export const FlashcardsToolbar = () => {
   const { clearDeck, perPage, onSet, setPerPage, deck } =
     useFlashcardFiltersStore();
-  const query = useGetDeckNames({
+  const { isLoading, isError, data, refetch, isFetching } = useGetDeckNames({
     hasFlashcard: true,
   });
-
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
 
   const decks = data?.data ?? [];
 
@@ -86,7 +83,7 @@ export const FlashcardsToolbar = () => {
                       onClick={() => onSet(d.name)}
                       className={cn(
                         "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
-                        deck === d.name && "text-foreground"
+                        deck === d.name && "text-foreground",
                       )}
                     >
                       {d.name}
@@ -115,7 +112,7 @@ export const FlashcardsToolbar = () => {
                         key={page}
                         className={cn(
                           "flex items-center gap-x-4 text-muted-foreground cursor-pointer",
-                          perPage === page && "text-foreground"
+                          perPage === page && "text-foreground",
                         )}
                         onClick={() => setPerPage(page)}
                       >

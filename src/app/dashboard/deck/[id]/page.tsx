@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { BreadcrumbCustom } from "@/components/shared/breadcrumb-custom";
 import { useGetDeck } from "@/features/deck/api/use-get-deck";
 import { useStartStudy } from "@/features/study/api/use-start-session";
-import { getQueryState } from "@/lib/query/use-query-state";
 import { useState } from "react";
 import { DeckAnimations } from "./_components/deck-animations";
 import { DeckCard } from "./_components/deck-card";
@@ -19,8 +18,7 @@ export default function DeckPage() {
   const [expandedStats, setExpandedStats] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const query = useGetDeck(id);
-  const { isLoading, isError, data, refetch, isFetching } = getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } = useGetDeck(id);
   const { mutate: mutateStart } = useStartStudy();
 
   async function handleStartStudy() {
@@ -36,7 +34,7 @@ export default function DeckPage() {
 
   const displayedTags = showAllTags ? tags : tags.slice(0, 6);
   const filteredFlashcards = flashcards.filter((fc) =>
-    fc.front.toLowerCase().includes(searchTerm.toLowerCase())
+    fc.front.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (isLoading) {
@@ -50,7 +48,9 @@ export default function DeckPage() {
   if (isError || !deck) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <p className="text-muted-foreground">Ocorreu um erro ao carregar o deck.</p>
+        <p className="text-muted-foreground">
+          Ocorreu um erro ao carregar o deck.
+        </p>
         <button
           onClick={() => refetch()}
           className="px-4 py-2 border rounded-md hover:bg-muted transition-colors"
@@ -71,10 +71,7 @@ export default function DeckPage() {
 
       <DeckAnimations />
 
-      <BreadcrumbCustom
-        href="/dashboard/deck"
-        label="Voltar para Decks"
-      />
+      <BreadcrumbCustom href="/dashboard/deck" label="Voltar para Decks" />
 
       <DeckCard
         deck={deck}
@@ -93,10 +90,7 @@ export default function DeckPage() {
         averageGrade={performance.averageGrade}
       />
 
-      <DeckInputSearch
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
+      <DeckInputSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <DeckSearchedFlashcard
         filteredFlashcards={filteredFlashcards}

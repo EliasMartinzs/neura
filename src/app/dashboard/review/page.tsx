@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { useGetReviews } from "@/features/study/api/use-get-reviews";
-import { getQueryState } from "@/lib/query/use-query-state";
 import { Calendar, CalendarSync, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ReviewOverview } from "./_components/review-overview";
@@ -10,9 +9,7 @@ import { ReviewSessionCard } from "./_components/review-session-card";
 
 export default function ReviewPage() {
   const [selected, setSelected] = useState<"overview" | "session">("overview");
-  const query = useGetReviews();
-  const { isLoading, isError, data, refetch, isFetching } =
-    getQueryState(query);
+  const { isLoading, isError, data, refetch, isFetching } = useGetReviews();
 
   const reviewData = data?.data;
   const today = reviewData?.today;
